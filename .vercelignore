@@ -1,0 +1,9 @@
+backend/venv
+backend/.venv
+backend/.pytest_cache
+backend/codelens.db
+backend/tests
+frontend/node_modules
+frontend/.next
+.git
+.pytest_cache
