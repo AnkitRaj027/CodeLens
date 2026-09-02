@@ -23,7 +23,16 @@ export default function LoginPage() {
       await login(email, password);
       router.push("/analyzer");
     } catch (err: any) {
-      setError(err.response?.data?.detail || "Failed to sign in. Please verify your credentials.");
+      const detail = err.response?.data?.detail;
+      if (typeof detail === "string") {
+        setError(detail);
+      } else if (Array.isArray(detail)) {
+        setError(detail.map((d: any) => d.msg || d.message).join(", "));
+      } else if (err.message === "Network Error" || !err.response) {
+        setError("Cannot connect to backend server. If Render was asleep, please wait 30 seconds and try again.");
+      } else {
+        setError(err.message || "Failed to sign in. Please verify your credentials.");
+      }
     } finally {
       setLoading(false);
     }

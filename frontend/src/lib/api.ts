@@ -1,11 +1,21 @@
 import axios from "axios";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  (typeof window !== "undefined" ? "/api/v1" : "http://localhost:8000/api/v1");
+function getApiBaseUrl(): string {
+  let url = process.env.NEXT_PUBLIC_API_URL?.trim();
+  if (url) {
+    // Remove any trailing slashes
+    url = url.replace(/\/+$/, "");
+    // Automatically append /api/v1 if not present
+    if (!url.endsWith("/api/v1")) {
+      url = `${url}/api/v1`;
+    }
+    return url;
+  }
+  return typeof window !== "undefined" ? "/api/v1" : "http://localhost:8000/api/v1";
+}
 
 export const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: getApiBaseUrl(),
   headers: {
     "Content-Type": "application/json",
   },
