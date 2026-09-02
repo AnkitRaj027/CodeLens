@@ -1,20 +1,42 @@
+import ssl
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+from sqlalchemy.engine.url import make_url
 from app.core.config import settings
 
-def get_async_db_url(url: str) -> str:
-    if url.startswith("postgresql://"):
-        return url.replace("postgresql://", "postgresql+asyncpg://", 1)
-    if url.startswith("sqlite:///") and not url.startswith("sqlite+aiosqlite:///"):
-        return url.replace("sqlite:///", "sqlite+aiosqlite:///", 1)
-    return url
 
-_db_url = get_async_db_url(settings.DATABASE_URL)
+def get_db_url_and_connect_args(raw_url: str):
+    u = make_url(raw_url)
+    connect_args = {}
+
+    if u.drivername.startswith("postgresql"):
+        query = dict(u.query)
+        # Render, Neon, Supabase, etc. append ?sslmode=require
+        # asyncpg does NOT take 'sslmode' as a parameter; it requires 'ssl'
+        sslmode = query.pop("sslmode", None) or query.pop("ssl", None)
+        u = u.set(drivername="postgresql+asyncpg", query=query)
+
+        # Enable SSL for remote cloud databases or when sslmode was specified
+        if sslmode or (u.host and u.host not in ("localhost", "127.0.0.1")):
+            ctx = ssl.create_default_context()
+            ctx.check_hostname = False
+            ctx.verify_mode = ssl.CERT_NONE
+            connect_args["ssl"] = ctx
+
+    elif u.drivername.startswith("sqlite"):
+        if not u.drivername.startswith("sqlite+aiosqlite"):
+            u = u.set(drivername="sqlite+aiosqlite")
+        connect_args["check_same_thread"] = False
+
+    return u, connect_args
+
+
+_db_url, _connect_args = get_db_url_and_connect_args(settings.DATABASE_URL)
 
 engine = create_async_engine(
     _db_url,
     echo=False,
     future=True,
-    connect_args={"check_same_thread": False} if "sqlite" in _db_url else {}
+    connect_args=_connect_args
 )
 
 AsyncSessionLocal = async_sessionmaker(
