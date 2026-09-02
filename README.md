@@ -12,7 +12,16 @@ An AI-assisted, production-grade web platform and deterministic algorithm comple
 - **Recursion Trees & Recurrence Solver**: Automatically solves divide-and-conquer recurrences ($T(n) = T(n/2) + O(1) \rightarrow O(\log n)$), Master Theorem ($T(n) = 2T(n/2) + O(n) \rightarrow O(n \log n)$), and exponential branching trees ($O(2^n)$).
 - **Deep Memory Space Breakdown**: Dissects **Auxiliary Heap Memory** (1D arrays $O(n)$, 2D matrix grids $O(n^2)$) vs **Recursion Call Stack Memory** ($O(n)$, $O(\log n)$).
 
-### 2. 🧠 Grounded AI Pedagogical DSA Tutor
+### 2. 🎬 Interactive Code Execution Visualization Studio
+- **Unified Execution Synchronization**: Source Code $\leftrightarrow$ AST $\leftrightarrow$ CFG $\leftrightarrow$ Call Stack $\leftrightarrow$ Variables $\leftrightarrow$ Algorithm Canvas.
+- **Control Flow Graph (CFG)**: Real control flow graph rendering decision branches (`YES`/`NO`), loop back-edges, and runtime evaluation badges (`7 <= 1 -> FALSE`).
+- **Rich AST Tree View**: Node-level execution states (`Pending`, `Current`, `Executed`) with real-time evaluated result badges (`mid = len(arr) // 2 -> Result: mid = 3`).
+- **Dedicated Call Stack Panel**: Visualizes recursive function calls (e.g. `merge_sort([38, 27])`) with frame variables and push/pop animations.
+- **Live Memory & Variables State Tracker**: Highlights variable deltas (`old → new`) with Beginner and Developer views.
+- **Algorithm Visualizer Canvas**: Step-by-step visual data structures (Merge Sort partition trees, Binary Search low/mid/high pointers, 2-pointer matrix grids).
+- **"Explain This Step" Engine**: Deterministic plain-English mathematical computation breakdowns for every step.
+
+### 3. 🧠 Grounded AI Pedagogical DSA Tutor
 - Injects verified static analysis findings as **immutable ground truth** into the AI context to ensure zero hallucination.
 - **Multi-Tier Explanation Modes**:
   - `Beginner`: High school & intuitive analogies.

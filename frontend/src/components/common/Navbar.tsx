@@ -43,7 +43,6 @@ export const Navbar: React.FC = () => {
     { name: "Curriculum", href: "/learn", icon: BookOpen },
     { name: "Practice Arena", href: "/practice", icon: CheckCircle2 },
     { name: "Algorithms", href: "/algorithms", icon: Layers },
-    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   ];
 
   return (

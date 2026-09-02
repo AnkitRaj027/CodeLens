@@ -2,14 +2,14 @@
 
 import React from "react";
 import Link from "next/link";
-import { 
-  Terminal, 
-  Cpu, 
-  Sparkles, 
-  ShieldCheck, 
-  Layers, 
-  ArrowRight, 
-  CheckCircle2, 
+import {
+  Terminal,
+  Cpu,
+  Sparkles,
+  ShieldCheck,
+  Layers,
+  ArrowRight,
+  CheckCircle2,
   TrendingDown
 } from "lucide-react";
 
@@ -29,7 +29,7 @@ export default function LandingPage() {
       <section className="relative overflow-hidden pt-16 pb-20 md:pt-24 md:pb-28">
         {/* Subtle technical gradient */}
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[250px] bg-blue-600/5 blur-[100px] pointer-events-none rounded-full" />
-        
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center max-w-3xl mx-auto space-y-5">
             {/* Top Engine Badge */}
@@ -40,9 +40,9 @@ export default function LandingPage() {
 
             {/* Main Headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-[#F4F4F5] leading-[1.1]">
-              Analyze. Understand. <br />
-              <span className="text-[#F4F4F5] underline decoration-blue-500/50 decoration-2 underline-offset-8">
-                Optimize.
+              Analyze. Understand.. <br />
+              <span className="text-[#F4F4F5]  decoration-blue-500/50 decoration-2 underline-offset-8">
+                Optimize
               </span>
             </h1>
 

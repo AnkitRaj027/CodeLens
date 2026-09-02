@@ -3,7 +3,7 @@ import logging
 from typing import Dict, Any, Optional
 import httpx
 from app.core.config import settings
-from app.schemas.ai import AIExplainRequest, AIExplainResponse, OptimizedAlternative
+from app.schemas.ai import AIExplainRequest, AIExplainResponse, OptimizedAlternative, AIChatRequest, AIChatResponse
 
 logger = logging.getLogger(__name__)
 
@@ -386,3 +386,82 @@ Respond in strict JSON with fields: explanation_mode, summary, step_by_step_reas
             optimization=opt,
             learning_takeaway=takeaway
         )
+
+    @staticmethod
+    async def generate_chat_response(request: AIChatRequest) -> AIChatResponse:
+        """Conversational AI Tutor for multi-turn Q&A with AST grounding."""
+        system_prompt = f"""You are the CodeLens AI DSA Assistant & Interactive Algorithmic Tutor.
+CRITICAL CONSTRAINT: You MUST accept the following verified static AST analysis complexity as ABSOLUTE GROUND TRUTH:
+- Analyzed Time Complexity: {request.time_complexity}
+- Analyzed Space Complexity: {request.space_complexity}
+- Static Confidence: {request.confidence}
+- Language: {request.language}
+
+Do NOT contradict these complexities under any circumstances.
+Source Code:
+```{request.language}
+{request.code}
+```
+
+Answer the developer's question accurately, concisely, and educationally. If they ask about optimization, explain the trade-offs. If they ask for code, provide clean, idiomatic code snippets in {request.language} (or C++/Python if requested). Use markdown formatting."""
+
+        if settings.MISTRAL_API_KEY:
+            try:
+                chat_messages = [{"role": "system", "content": system_prompt}]
+                
+                # Include previous conversation history (up to last 6 messages)
+                for msg in request.messages[-6:]:
+                    chat_messages.append({"role": msg.role, "content": msg.content})
+                
+                # Append current question
+                chat_messages.append({"role": "user", "content": request.question})
+
+                payload = {
+                    "model": "mistral-small-latest",
+                    "messages": chat_messages,
+                    "temperature": 0.3,
+                    "max_tokens": 1024
+                }
+                headers = {
+                    "Authorization": f"Bearer {settings.MISTRAL_API_KEY}",
+                    "Content-Type": "application/json"
+                }
+
+                async with httpx.AsyncClient(timeout=25.0) as client:
+                    resp = await client.post("https://api.mistral.ai/v1/chat/completions", headers=headers, json=payload)
+                    if resp.status_code == 200:
+                        data = resp.json()
+                        answer = data["choices"][0]["message"]["content"]
+                        
+                        followups = [
+                            "How would this scale if N doubles to 1,000,000?",
+                            "Can we trade auxiliary space to improve runtime?",
+                            f"Show equivalent optimal implementation in {'C++' if request.language == 'python' else 'Python'}"
+                        ]
+                        return AIChatResponse(answer=answer, suggested_followups=followups)
+            except Exception as e:
+                logger.warning(f"Mistral chat call failed: {e}")
+
+        # Deterministic Grounded Fallback
+        q_lower = request.question.lower()
+        if "optimize" in q_lower or "better" in q_lower or "faster" in q_lower:
+            if request.time_complexity in ["O(n²)", "O(n^2)"]:
+                ans = f"**Optimization Strategy for {request.time_complexity}:**\n\nYour current solution runs in quadratic time because it performs pairwise checks across nested loops. You can optimize this from **O(n²)** to **O(n)** by trading space for time using a **Hash Map / Frequency Table** or sorting with **Two Pointers (O(n log n))**."
+            elif "2^n" in request.time_complexity:
+                ans = f"**Optimization Strategy for {request.time_complexity}:**\n\nYour recursive branching tree recalculates identical subproblems redundantly. Apply **Dynamic Programming (Memoization or Tabulation)** to reduce time from **O(2ⁿ)** to **O(n)** linear time."
+            else:
+                ans = f"Your current code already operates at **{request.time_complexity}** time and **{request.space_complexity}** space, which is asymptotically optimal for general inputs."
+        elif "space" in q_lower or "memory" in q_lower:
+            ans = f"**Auxiliary Spatial Footprint:**\n\nThe static analyzer verified **{request.space_complexity}** auxiliary space. Scalar variables use $O(1)$ memory. Dynamic heap buffers (arrays, vectors, hash tables) or recursion call stacks proportional to input size yield $O(n)$ space."
+        else:
+            ans = f"**Algorithmic Assessment:**\n\n- Verified Time Complexity: `{request.time_complexity}`\n- Verified Space Complexity: `{request.space_complexity}`\n\nThe loop structures and control flow dictate this bound. Feel free to ask specific questions about optimization, scaling impact, or alternative data structures!"
+
+        return AIChatResponse(
+            answer=ans,
+            suggested_followups=[
+                "How to optimize this further?",
+                "What is the worst-case space complexity?",
+                "Explain line-by-line mechanism"
+            ]
+        )
+

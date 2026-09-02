@@ -180,6 +180,7 @@ interface CodeEditorProps {
   setLanguage: (lang: string) => void;
   onAnalyze: () => void;
   isAnalyzing: boolean;
+  activeLine?: number | null;
 }
 
 export const CodeEditor: React.FC<CodeEditorProps> = ({
@@ -189,8 +190,34 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   setLanguage,
   onAnalyze,
   isAnalyzing,
+  activeLine,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const editorRef = useRef<any>(null);
+  const decorationsRef = useRef<string[]>([]);
+
+  // Update line decorations whenever activeLine changes
+  useEffect(() => {
+    if (!editorRef.current) return;
+    const monaco = (window as any).monaco;
+    if (!monaco) return;
+
+    if (activeLine && activeLine > 0) {
+      decorationsRef.current = editorRef.current.deltaDecorations(decorationsRef.current, [
+        {
+          range: new monaco.Range(activeLine, 1, activeLine, 1),
+          options: {
+            isWholeLine: true,
+            className: "bg-blue-500/20 border-l-4 border-blue-500 shadow-sm",
+            glyphMarginClassName: "text-blue-400 font-bold",
+          }
+        }
+      ]);
+      editorRef.current.revealLineInCenterIfOutsideViewport(activeLine);
+    } else {
+      decorationsRef.current = editorRef.current.deltaDecorations(decorationsRef.current, []);
+    }
+  }, [activeLine]);
 
   // Keyboard shortcut: Ctrl + Enter to run analysis
   useEffect(() => {
@@ -351,6 +378,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
           language={language === "cpp" ? "cpp" : "python"}
           value={code}
           onChange={(val) => setCode(val || "")}
+          onMount={(editor) => { editorRef.current = editor; }}
           theme="vs-dark"
           options={{
             fontSize: 13,

@@ -17,7 +17,8 @@ import {
   Check, 
   AlertCircle,
   Brain,
-  Zap
+  Zap,
+  Activity
 } from "lucide-react";
 
 export default function AnalyzerPage() {
@@ -30,6 +31,7 @@ export default function AnalyzerPage() {
   const [savedSuccess, setSavedSuccess] = useState<boolean>(false);
   const [explanation, setExplanation] = useState<AIExplanationResult | null>(null);
   const [lastParseDuration, setLastParseDuration] = useState<number>(0);
+  const [activeExecutionLine, setActiveExecutionLine] = useState<number | null>(null);
 
   const runAnalysis = async (codeToAnalyze = code, langToAnalyze = language) => {
     if (!codeToAnalyze.trim()) return;
@@ -169,6 +171,7 @@ export default function AnalyzerPage() {
         setLanguage={(l) => setLanguage(l)}
         onAnalyze={() => runAnalysis(code, language)}
         isAnalyzing={isAnalyzing}
+        activeLine={activeExecutionLine}
       />
 
       {/* Error Alert */}
@@ -200,6 +203,18 @@ export default function AnalyzerPage() {
             </button>
 
             <button
+              onClick={() => setActiveTab("ast")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-medium transition-all ${
+                activeTab === "ast"
+                  ? "bg-[#18181B] text-[#F4F4F5] border border-[#27272A]"
+                  : "text-[#71717A] hover:text-[#F4F4F5]"
+              }`}
+            >
+              <Activity className="w-3.5 h-3.5 text-indigo-400" />
+              <span>Execution Studio & AST</span>
+            </button>
+
+            <button
               onClick={() => setActiveTab("ai")}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-medium transition-all ${
                 activeTab === "ai"
@@ -222,23 +237,20 @@ export default function AnalyzerPage() {
               <Zap className="w-3.5 h-3.5 text-amber-400" />
               <span>Optimization Diff</span>
             </button>
-
-            <button
-              onClick={() => setActiveTab("ast")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-medium transition-all ${
-                activeTab === "ast"
-                  ? "bg-[#18181B] text-[#F4F4F5] border border-[#27272A]"
-                  : "text-[#71717A] hover:text-[#F4F4F5]"
-              }`}
-            >
-              <FolderTree className="w-3.5 h-3.5 text-indigo-400" />
-              <span>AST Inspector</span>
-            </button>
           </div>
 
           {/* Active Tab View */}
           {activeTab === "findings" && (
             <LineFindingsTable findings={result.line_findings} />
+          )}
+
+          {activeTab === "ast" && (
+            <ASTVisualizerTree 
+              tree={result.ast_tree} 
+              code={code} 
+              language={language}
+              onActiveLineChange={setActiveExecutionLine}
+            />
           )}
 
           {activeTab === "ai" && (
@@ -252,10 +264,6 @@ export default function AnalyzerPage() {
               result={result}
               explanation={explanation}
             />
-          )}
-
-          {activeTab === "ast" && (
-            <ASTVisualizerTree tree={result.ast_tree} />
           )}
         </div>
       )}

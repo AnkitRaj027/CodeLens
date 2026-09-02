@@ -30,3 +30,23 @@ class AIExplainResponse(BaseModel):
     what_happens_if_n_doubles: str
     optimization: Optional[OptimizedAlternative] = None
     learning_takeaway: str
+
+
+class AIChatMessage(BaseModel):
+    role: str  # "user" | "assistant" | "system"
+    content: str
+
+
+class AIChatRequest(BaseModel):
+    code: str
+    language: str = "python"
+    time_complexity: str
+    space_complexity: str
+    confidence: str = "HIGH"
+    messages: List[AIChatMessage] = []
+    question: str
+
+
+class AIChatResponse(BaseModel):
+    answer: str
+    suggested_followups: List[str] = []

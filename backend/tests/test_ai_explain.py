@@ -38,3 +38,22 @@ async def test_ai_explanation_endpoint(client: AsyncClient):
     assert data["explanation_mode"] == "dsa_student"
     assert "optimization" in data
     assert data["optimization"]["has_optimization"] is True
+
+
+@pytest.mark.asyncio
+async def test_ai_chat_endpoint(client: AsyncClient):
+    payload = {
+        "code": "def two_sum(arr, target):\n    for i in arr:\n        for j in arr:\n            if i+j==target: return True",
+        "language": "python",
+        "time_complexity": "O(n²)",
+        "space_complexity": "O(1)",
+        "confidence": "HIGH",
+        "messages": [],
+        "question": "How can I optimize this?"
+    }
+    response = await client.post("/api/v1/ai/chat", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert "answer" in data
+    assert len(data["answer"]) > 0
+

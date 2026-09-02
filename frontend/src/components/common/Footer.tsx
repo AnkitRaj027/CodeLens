@@ -34,7 +34,7 @@ export const Footer: React.FC = () => {
             <h4 className="text-xs font-semibold uppercase tracking-wider text-[#F4F4F5] mb-3 code-font">Platform</h4>
             <ul className="space-y-2 text-xs text-[#A1A1AA]">
               <li><Link href="/analyzer" className="hover:text-[#F4F4F5] transition-colors">Complexity IDE</Link></li>
-              <li><Link href="/dashboard" className="hover:text-[#F4F4F5] transition-colors">Dashboard</Link></li>
+              <li><Link href="/history" className="hover:text-[#F4F4F5] transition-colors">Analysis History</Link></li>
               <li><Link href="/practice" className="hover:text-[#F4F4F5] transition-colors">Practice Arena</Link></li>
               <li><Link href="/algorithms" className="hover:text-[#F4F4F5] transition-colors">Algorithm Matrix</Link></li>
             </ul>
