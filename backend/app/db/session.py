@@ -10,13 +10,21 @@ def get_db_url_and_connect_args(raw_url: str):
 
     if u.drivername.startswith("postgresql"):
         query = dict(u.query)
-        # Render, Neon, Supabase, etc. append ?sslmode=require
-        # asyncpg does NOT take 'sslmode' as a parameter; it requires 'ssl'
-        sslmode = query.pop("sslmode", None) or query.pop("ssl", None)
-        u = u.set(drivername="postgresql+asyncpg", query=query)
+        # Cloud providers (Neon, Render, Supabase) append libpq query flags like
+        # ?sslmode=require&channel_binding=prefer which asyncpg does not accept as kwargs.
+        ssl_requested = any(k in query for k in ("sslmode", "ssl", "channel_binding"))
 
-        # Enable SSL for remote cloud databases or when sslmode was specified
-        if sslmode or (u.host and u.host not in ("localhost", "127.0.0.1")):
+        # asyncpg connect() only accepts specific kwargs. Whitelist only supported params.
+        valid_asyncpg_params = {
+            "server_settings", "command_timeout", "statement_cache_size",
+            "max_cached_statement_lifetime", "max_cacheable_statement_size",
+            "target_session_attrs"
+        }
+        filtered_query = {k: v for k, v in query.items() if k in valid_asyncpg_params}
+        u = u.set(drivername="postgresql+asyncpg", query=filtered_query)
+
+        # Enable SSL for remote cloud databases or when ssl was requested
+        if ssl_requested or (u.host and u.host not in ("localhost", "127.0.0.1")):
             ctx = ssl.create_default_context()
             ctx.check_hostname = False
             ctx.verify_mode = ssl.CERT_NONE
