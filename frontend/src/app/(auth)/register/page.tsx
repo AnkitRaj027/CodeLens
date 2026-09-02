@@ -8,7 +8,7 @@ import { Code2, Sparkles, AlertCircle, ArrowRight, Loader2 } from "lucide-react"
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { register, demoLogin } = useAuth();
+  const { register } = useAuth();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,15 +29,10 @@ export default function RegisterPage() {
       await register(email, password, fullName);
       router.push("/analyzer");
     } catch (err: any) {
-      setError(err.response?.data?.detail || "Registration failed. Please try again or use Instant Demo Access.");
+      setError(err.response?.data?.detail || "Registration failed. Please try again.");
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleDemoSignIn = () => {
-    demoLogin(fullName || "Alex Developer", email || "alex@codelens.dev");
-    router.push("/analyzer");
   };
 
   return (
@@ -102,7 +97,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-2 flex items-center justify-center gap-2 py-2.5 px-4 rounded-md bg-[#F4F4F5] text-[#09090B] hover:bg-white font-medium text-xs shadow-sm transition-all disabled:opacity-50 font-sans font-semibold cursor-pointer"
+              className="w-full mt-2 flex items-center justify-center gap-2 py-2.5 px-4 rounded-md bg-[#F4F4F5] text-[#09090B] hover:bg-white font-medium text-xs shadow-sm transition-all disabled:opacity-50 font-sans font-semibold"
             >
               {loading ? (
                 <>
@@ -117,24 +112,6 @@ export default function RegisterPage() {
               )}
             </button>
           </form>
-
-          {/* Quick Demo Access Divider */}
-          <div className="relative my-5">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-[#27272A]" />
-            </div>
-            <div className="relative flex justify-center text-[10px] uppercase font-mono">
-              <span className="bg-[#111113] px-2 text-[#71717A]">Or instant access</span>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleDemoSignIn}
-            className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-md bg-[#18181B] hover:bg-[#202024] border border-emerald-500/30 text-emerald-400 hover:text-emerald-300 font-mono text-xs transition-all shadow-sm cursor-pointer"
-          >
-            <span>⚡ Instant Demo Access (No Backend Required)</span>
-          </button>
 
           <div className="mt-6 pt-6 border-t border-[#27272A] text-center">
             <p className="text-xs text-[#71717A]">
