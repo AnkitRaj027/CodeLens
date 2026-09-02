@@ -121,14 +121,45 @@ export const EXAMPLE_PRESETS: ExamplePreset[] = [
         return binary_search(arr, mid + 1, high, target)`
   },
   {
-    id: "array_alloc",
-    name: "2D Matrix Grid — Space O(n²)",
-    category: "Memory Space",
-    language: "python",
-    code: `def initialize_matrix(n, m):
-    # Allocates quadratic auxiliary heap memory O(n*m)
-    grid = [[0] * m for _ in range(n)]
-    return grid`
+    id: "cpp_nested",
+    name: "C++ Nested Grid — O(n²)",
+    category: "C++ Algorithms",
+    language: "cpp",
+    code: `#include <iostream>
+
+void printGrid(int n) {
+    // Outer loop O(n), Inner loop O(n) -> O(n²)
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            std::cout << i << " " << j << "\\n";
+        }
+    }
+}`
+  },
+  {
+    id: "cpp_fibonacci",
+    name: "C++ Branching Tree — O(2ⁿ)",
+    category: "C++ Recursion",
+    language: "cpp",
+    code: `#include <iostream>
+
+int fibonacci(int n) {
+    // T(n) = 2T(n-1) + O(1) -> O(2^n) time, O(n) stack
+    if (n <= 1) return n;
+    return fibonacci(n - 1) + fibonacci(n - 2);
+}`
+  },
+  {
+    id: "cpp_vector_alloc",
+    name: "C++ 2D Matrix — Space O(n²)",
+    category: "C++ Memory",
+    language: "cpp",
+    code: `#include <vector>
+
+void createGrid(int n, int m) {
+    // Allocates quadratic auxiliary heap memory O(n*m)
+    std::vector<std::vector<int>> matrix(n, std::vector<int>(m, 0));
+}`
   }
 ];
 
