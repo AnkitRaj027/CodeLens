@@ -54,7 +54,6 @@ for i in range(n):
     assert result.time_complexity == "O(n²)"
     assert result.space_complexity == "O(1)"
     assert result.confidence == "HIGH"
-    # Check that dependent inner loop role is identified
     dependent_finding = [f for f in result.line_findings if f.role == "DEPENDENT_INNER_LOOP"]
     assert len(dependent_finding) > 0
 
@@ -111,12 +110,65 @@ def create_lookup(n):
     return arr
 """
     result = analyzer.analyze(code)
-    assert result.space_complexity == "O(n)"
     assert result.auxiliary_space == "O(n)"
+    assert result.space_complexity == "O(n)"
     alloc_finding = [f for f in result.line_findings if f.role == "ALLOCATION"]
     assert len(alloc_finding) > 0
 
 
-def test_api_analyze_endpoint(client):
-    import pytest
-    pass
+def test_2d_matrix_space_allocation():
+    code = """
+def create_grid(n, m):
+    matrix = [[0] * m for _ in range(n)]
+    return matrix
+"""
+    result = analyzer.analyze(code)
+    assert result.auxiliary_space == "O(n²)"
+    assert result.space_complexity == "O(n²)"
+    matrix_finding = [f for f in result.line_findings if f.role == "MATRIX_ALLOCATION"]
+    assert len(matrix_finding) > 0
+
+
+def test_linear_recursion_factorial():
+    code = """
+def factorial(n):
+    if n <= 1:
+        return 1
+    return n * factorial(n - 1)
+"""
+    result = analyzer.analyze(code)
+    assert result.time_complexity == "O(n)"
+    assert result.recursion_stack == "O(n)"
+    assert result.space_complexity == "O(n)"
+    assert result.deterministic_summary.has_recursion is True
+    assert "factorial" in result.deterministic_summary.recursive_functions
+
+
+def test_binary_branching_recursion_fibonacci():
+    code = """
+def fibonacci(n):
+    if n <= 1:
+        return n
+    return fibonacci(n - 1) + fibonacci(n - 2)
+"""
+    result = analyzer.analyze(code)
+    assert result.time_complexity == "O(2^n)"
+    assert result.recursion_stack == "O(n)"
+    assert result.space_complexity == "O(n)"
+    assert result.deterministic_summary.has_recursion is True
+
+
+def test_binary_search_recursion():
+    code = """
+def binary_search(arr, low, high, target):
+    if low > high:
+        return -1
+    mid = (low + high) // 2
+    if arr[mid] == target:
+        return mid
+    return binary_search(arr, low, mid - 1, target)
+"""
+    result = analyzer.analyze(code)
+    assert result.time_complexity == "O(log n)"
+    assert result.recursion_stack == "O(log n)"
+    assert result.deterministic_summary.has_recursion is True

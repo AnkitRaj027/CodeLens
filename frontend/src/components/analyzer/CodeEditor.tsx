@@ -93,16 +93,42 @@ export const EXAMPLE_PRESETS: ExamplePreset[] = [
             k = k // 2`
   },
   {
+    id: "fibonacci_rec",
+    name: "Branching Recursion — O(2ⁿ)",
+    category: "Recursion",
+    language: "python",
+    code: `def fibonacci(n):
+    # T(n) = 2T(n-1) + O(1) -> O(2^n) time, O(n) call stack
+    if n <= 1:
+        return n
+    return fibonacci(n - 1) + fibonacci(n - 2)`
+  },
+  {
+    id: "binary_search_rec",
+    name: "Binary Search — O(log n)",
+    category: "Recursion",
+    language: "python",
+    code: `def binary_search(arr, low, high, target):
+    # T(n) = T(n/2) + O(1) -> O(log n) time, O(log n) call stack
+    if low > high:
+        return -1
+    mid = (low + high) // 2
+    if arr[mid] == target:
+        return mid
+    elif arr[mid] > target:
+        return binary_search(arr, low, mid - 1, target)
+    else:
+        return binary_search(arr, mid + 1, high, target)`
+  },
+  {
     id: "array_alloc",
-    name: "Auxiliary Array Allocation — Space O(n)",
+    name: "2D Matrix Grid — Space O(n²)",
     category: "Memory Space",
     language: "python",
-    code: `def build_lookup_table(n):
-    # Linear auxiliary space allocation
-    table = [0] * n
-    for i in range(n):
-        table[i] = i * 2
-    return table`
+    code: `def initialize_matrix(n, m):
+    # Allocates quadratic auxiliary heap memory O(n*m)
+    grid = [[0] * m for _ in range(n)]
+    return grid`
   }
 ];
 

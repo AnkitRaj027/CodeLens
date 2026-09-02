@@ -8,6 +8,8 @@ from app.engine.common.complexity_math import (
     normalize_complexity
 )
 from app.engine.python.loop_analyzer import LoopAnalyzer
+from app.engine.python.recursion_analyzer import RecursionAnalyzer, RecursionInfo
+from app.engine.python.space_analyzer import SpaceAnalyzer
 from app.engine.python.ast_builder import ASTVisualizerBuilder
 from app.schemas.analysis import (
     StaticAnalysisResponse,
@@ -20,6 +22,8 @@ from app.schemas.analysis import (
 class PythonASTAnalyzer(BaseAnalyzer):
     def __init__(self):
         self.loop_analyzer = LoopAnalyzer()
+        self.recursion_analyzer = RecursionAnalyzer()
+        self.space_analyzer = SpaceAnalyzer()
         self.ast_builder = ASTVisualizerBuilder()
 
     def analyze(self, source_code: str) -> StaticAnalysisResponse:
@@ -40,56 +44,61 @@ class PythonASTAnalyzer(BaseAnalyzer):
                 summary_explanation=f"Code contains a syntax error: {e.msg}"
             )
 
-        # Analysis state
         line_findings_dict: Dict[int, LineFinding] = {}
         total_loops = 0
         max_nesting_depth = 0
-        allocated_structures: List[Dict[str, Any]] = []
-        function_calls: List[str] = []
         is_uncertain = False
         uncertainty_reason = ""
 
-        # Step 1: Detect memory allocations
+        # Step 1: Detect recursion across all defined functions
+        has_recursion = False
+        recursive_funcs: List[str] = []
+        recursion_time_candidates: List[str] = []
+        max_recursion_stack = "O(1)"
+        recursion_equations: List[str] = []
+        recursion_details_list: List[Dict[str, Any]] = []
+
         for node in ast.walk(tree):
-            if isinstance(node, ast.Assign):
-                # Check for list multiplication e.g. [0] * n or [[0]*m for _ in range(n)]
-                val = node.value
-                line_no = getattr(node, "lineno", 1)
-                code_snippet = lines[line_no - 1] if line_no <= len(lines) else ""
+            if isinstance(node, ast.FunctionDef):
+                rec_info = self.recursion_analyzer.analyze_function(node, lines)
+                if rec_info:
+                    has_recursion = True
+                    recursive_funcs.append(rec_info.func_name)
+                    recursion_time_candidates.append(rec_info.time_complexity)
+                    max_recursion_stack = max_complexity(max_recursion_stack, rec_info.stack_space)
+                    recursion_equations.append(rec_info.recurrence_equation)
+                    recursion_details_list.append({
+                        "function_name": rec_info.func_name,
+                        "branch_count": rec_info.branch_count,
+                        "reduction_pattern": rec_info.reduction_type,
+                        "recurrence_equation": rec_info.recurrence_equation,
+                        "time_complexity": rec_info.time_complexity,
+                        "stack_space": rec_info.stack_space,
+                        "reasoning": rec_info.reasoning
+                    })
 
-                if isinstance(val, ast.BinOp) and isinstance(val.op, ast.Mult):
-                    if isinstance(val.left, ast.List) or isinstance(val.right, ast.List):
-                        allocated_structures.append({"type": "Array", "line": line_no, "complexity": "O(n)"})
-                        line_findings_dict[line_no] = LineFinding(
-                            line_number=line_no,
-                            code=code_snippet,
-                            complexity="O(n)",
-                            role="ALLOCATION",
-                            explanation="Linear array allocation proportional to input parameter."
+                    # Attribute line findings for Base Cases & Recursive Calls
+                    for b_line in rec_info.base_cases:
+                        line_findings_dict[b_line] = LineFinding(
+                            line_number=b_line,
+                            code=lines[b_line - 1] if b_line <= len(lines) else "",
+                            complexity="O(1)",
+                            role="BASE_CASE",
+                            explanation=f"Base case terminating recursion for '{rec_info.func_name}'."
                         )
-                elif isinstance(val, ast.ListComp):
-                    allocated_structures.append({"type": "ListComp", "line": line_no, "complexity": "O(n)"})
-                    line_findings_dict[line_no] = LineFinding(
-                        line_number=line_no,
-                        code=code_snippet,
-                        complexity="O(n)",
-                        role="ALLOCATION",
-                        explanation="List comprehension creates an auxiliary list in linear memory O(n)."
-                    )
-                elif isinstance(val, ast.Dict):
-                    allocated_structures.append({"type": "Dict", "line": line_no, "complexity": "O(n)"})
-                    line_findings_dict[line_no] = LineFinding(
-                        line_number=line_no,
-                        code=code_snippet,
-                        complexity="O(1)",
-                        role="ALLOCATION",
-                        explanation="Initializes hash map/dictionary for auxiliary lookup."
-                    )
 
-        # Step 2: Recursive block analyzer for time complexity & nested loop hierarchies
+                    for c_line, arg_pat in rec_info.recursive_calls:
+                        line_findings_dict[c_line] = LineFinding(
+                            line_number=c_line,
+                            code=lines[c_line - 1] if c_line <= len(lines) else "",
+                            complexity=rec_info.time_complexity,
+                            role="RECURSION_CALL",
+                            explanation=f"Recursive call to '{rec_info.func_name}' ({rec_info.recurrence_equation})."
+                        )
+
+        # Step 2: Analyze loop structures
         def analyze_block(statements: List[ast.AST], current_enclosing_vars: Set[str], current_depth: int) -> Tuple[str, int]:
-            nonlocal total_loops, max_nesting_depth, is_uncertain, uncertainty_reason
-            
+            nonlocal total_loops, max_nesting_depth
             block_complexities: List[str] = []
             max_depth_in_block = current_depth
 
@@ -117,11 +126,9 @@ class PythonASTAnalyzer(BaseAnalyzer):
                     if var_name:
                         new_enclosing.add(var_name)
 
-                    # Analyze inner body
                     inner_comp, inner_depth = analyze_block(stmt.body, new_enclosing, depth)
                     max_depth_in_block = max(max_depth_in_block, inner_depth)
 
-                    # Multiply loop bound with inner body complexity
                     total_loop_comp = multiply_complexities(loop_comp, inner_comp)
                     block_complexities.append(total_loop_comp)
 
@@ -141,7 +148,6 @@ class PythonASTAnalyzer(BaseAnalyzer):
                         explanation=reason
                     )
 
-                    # Analyze inner body
                     inner_comp, inner_depth = analyze_block(stmt.body, current_enclosing_vars, depth)
                     max_depth_in_block = max(max_depth_in_block, inner_depth)
 
@@ -151,8 +157,7 @@ class PythonASTAnalyzer(BaseAnalyzer):
                 elif isinstance(stmt, ast.If):
                     then_comp, d1 = analyze_block(stmt.body, current_enclosing_vars, current_depth)
                     else_comp, d2 = analyze_block(stmt.orelse, current_enclosing_vars, current_depth)
-                    branch_comp = max_complexity(then_comp, else_comp)
-                    block_complexities.append(branch_comp)
+                    block_complexities.append(max_complexity(then_comp, else_comp))
                     max_depth_in_block = max(max_depth_in_block, d1, d2)
 
                 elif isinstance(stmt, ast.FunctionDef):
@@ -161,10 +166,8 @@ class PythonASTAnalyzer(BaseAnalyzer):
                     max_depth_in_block = max(max_depth_in_block, fn_depth)
 
                 else:
-                    # Constant time statement
                     block_complexities.append("O(1)")
                     if line_no not in line_findings_dict and code_snippet.strip():
-                        # Attribute constant line finding
                         line_findings_dict[line_no] = LineFinding(
                             line_number=line_no,
                             code=code_snippet,
@@ -175,38 +178,41 @@ class PythonASTAnalyzer(BaseAnalyzer):
 
             return (sum_complexities(block_complexities), max_depth_in_block)
 
-        # Execute block analysis from root
-        overall_time, _ = analyze_block(tree.body, set(), 0)
+        loop_time_comp, _ = analyze_block(tree.body, set(), 0)
 
-        # Calculate space complexity based on allocations
-        aux_space = "O(1)"
-        if allocated_structures:
-            highest_alloc = "O(1)"
-            for alloc in allocated_structures:
-                highest_alloc = max_complexity(highest_alloc, alloc.get("complexity", "O(1)"))
-            aux_space = highest_alloc
+        # Step 3: Combine loop complexity with recursion complexity
+        overall_time = loop_time_comp
+        if has_recursion:
+            for rec_time in recursion_time_candidates:
+                overall_time = max_complexity(overall_time, rec_time)
 
-        # Determine confidence
+        # Step 4: Perform Deep Space Analysis
+        space_report = self.space_analyzer.analyze_space(tree, lines, max_recursion_stack)
+        for alloc_finding in space_report.line_findings:
+            line_findings_dict[alloc_finding.line_number] = alloc_finding
+
+        # Step 5: Evaluate confidence
         confidence = "HIGH"
-        confidence_reason = "Deterministic AST analysis identified loop iteration bounds and step factors."
-        if is_uncertain:
-            confidence = "MEDIUM"
-            confidence_reason = uncertainty_reason
+        confidence_reason = "Deterministic AST analysis identified loop iteration bounds, recursion recurrence, and memory allocations."
+        if has_recursion:
+            confidence = "HIGH"
+            eq_str = ", ".join(recursion_equations)
+            confidence_reason = f"Solved recurrence relation ({eq_str}) determining {overall_time} time and {max_recursion_stack} call stack depth."
         elif total_loops == 0 and overall_time == "O(1)":
             confidence = "HIGH"
             confidence_reason = "No unbounded loops or recursion detected. All operations execute in constant time O(1)."
         elif max_nesting_depth >= 2:
             confidence = "HIGH"
-            confidence_reason = f"Identified {max_nesting_depth} levels of loop nesting with deterministic bounds."
+            confidence_reason = f"Identified {max_nesting_depth} levels of loop nesting with deterministic iteration bounds."
 
-        # Build AST Visualizer tree
+        # Step 6: Build AST Visualizer tree
         ast_visual = self.ast_builder.build_tree(tree)
 
-        # Format line findings sorted by line number
-        sorted_findings = [line_findings_dict[k] for k in sorted(line_findings_dict.keys())]
-
-        # Generate summary explanation
-        if overall_time == "O(1)":
+        # Step 7: Summary narrative
+        if has_recursion:
+            rec_detail = recursion_details_list[0] if recursion_details_list else {}
+            summary = f"Recursive algorithm governed by {rec_detail.get('recurrence_equation', 'T(n)')}. Runs in {overall_time} time with {max_recursion_stack} recursion call stack space."
+        elif overall_time == "O(1)":
             summary = "The code consists of sequential constant-time statements and executes in O(1) time with O(1) auxiliary space."
         elif overall_time == "O(log n)":
             summary = "The code contains a logarithmic loop where the search space or index is repeatedly halved/scaled, running in O(log n) time."
@@ -219,21 +225,25 @@ class PythonASTAnalyzer(BaseAnalyzer):
         elif overall_time == "O(n³)":
             summary = "The code contains 3 levels of nested loops, executing n * n * n = n³ total iterations in cubic O(n³) time complexity."
         else:
-            summary = f"The estimated asymptotic complexity is {overall_time} time and {aux_space} auxiliary space based on static AST structure."
+            summary = f"The estimated asymptotic complexity is {overall_time} time and {space_report.total_space} space based on static AST structure."
+
+        sorted_findings = [line_findings_dict[k] for k in sorted(line_findings_dict.keys())]
 
         return StaticAnalysisResponse(
             time_complexity=overall_time,
-            space_complexity=aux_space,
-            auxiliary_space=aux_space,
-            recursion_stack="O(1)",
+            space_complexity=space_report.total_space,
+            auxiliary_space=space_report.auxiliary_space,
+            recursion_stack=max_recursion_stack,
             confidence=confidence,
             confidence_reason=confidence_reason,
             deterministic_summary=DeterministicSummary(
                 total_loops=total_loops,
                 max_loop_nesting_depth=max_nesting_depth,
-                has_recursion=False,
-                allocated_structures=allocated_structures,
-                function_calls=function_calls
+                has_recursion=has_recursion,
+                recursive_functions=recursive_funcs,
+                recursion_depth_estimate=max_recursion_stack if has_recursion else "None",
+                allocated_structures=space_report.allocations,
+                function_calls=recursive_funcs
             ),
             line_findings=sorted_findings,
             ast_tree=ast_visual,
