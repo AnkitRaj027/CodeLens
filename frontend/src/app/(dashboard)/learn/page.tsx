@@ -10,6 +10,8 @@ import {
   Loader2
 } from "lucide-react";
 
+import { DEFAULT_CURRICULUM_TOPICS } from "@/data/defaultData";
+
 interface CurriculumTopicSummary {
   id: string;
   slug: string;
@@ -23,17 +25,19 @@ interface CurriculumTopicSummary {
 }
 
 export default function LearnPage() {
-  const [topics, setTopics] = useState<CurriculumTopicSummary[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [topics, setTopics] = useState<CurriculumTopicSummary[]>(DEFAULT_CURRICULUM_TOPICS);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
   const fetchTopics = async () => {
-    setIsLoading(true);
     try {
       const res = await api.get<CurriculumTopicSummary[]>("/curriculum/topics");
-      setTopics(res.data);
+      if (res.data && res.data.length > 0) {
+        setTopics(res.data);
+      }
     } catch (e) {
-      console.error("Failed to load curriculum", e);
+      // Graceful offline/Vercel fallback
+      setTopics(DEFAULT_CURRICULUM_TOPICS);
     } finally {
       setIsLoading(false);
     }

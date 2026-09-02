@@ -15,6 +15,8 @@ import {
   FileCode
 } from "lucide-react";
 
+import { DEFAULT_QUIZ_QUESTIONS } from "@/data/defaultData";
+
 interface QuizQuestion {
   id: string;
   title: string;
@@ -134,7 +136,10 @@ export default function PracticePage() {
         setCurrentQuestion(fallback.data);
         sessionStorage.setItem(STORAGE_KEY_QUESTION, JSON.stringify(fallback.data));
       } catch (err) {
-        console.error("Fallback failed", err);
+        // Ultimate client-side fallback if server is offline
+        const randomFallback = DEFAULT_QUIZ_QUESTIONS[Math.floor(Math.random() * DEFAULT_QUIZ_QUESTIONS.length)];
+        setCurrentQuestion(randomFallback);
+        sessionStorage.setItem(STORAGE_KEY_QUESTION, JSON.stringify(randomFallback));
       }
     } finally {
       setIsGenerating(false);
@@ -169,7 +174,27 @@ export default function PracticePage() {
         setStreak(0);
       }
     } catch (e) {
-      console.error("Failed to submit answer", e);
+      // Local evaluation fallback
+      const timeCorrect = selectedTime === currentQuestion.correct_time;
+      const spaceCorrect = selectedSpace === currentQuestion.correct_space;
+      const fullyCorrect = timeCorrect && spaceCorrect;
+      const localResult: SubmitResult = {
+        is_time_correct: timeCorrect,
+        is_space_correct: spaceCorrect,
+        is_fully_correct: fullyCorrect,
+        correct_time: currentQuestion.correct_time,
+        correct_space: currentQuestion.correct_space,
+        explanation: currentQuestion.explanation,
+        score_delta: fullyCorrect ? 25 : timeCorrect || spaceCorrect ? 10 : -5
+      };
+      setResult(localResult);
+      setSolvedCount((prev) => prev + 1);
+      if (fullyCorrect) {
+        setScore((prev) => prev + localResult.score_delta);
+        setStreak((prev) => prev + 1);
+      } else {
+        setStreak(0);
+      }
     } finally {
       setIsSubmitting(false);
     }

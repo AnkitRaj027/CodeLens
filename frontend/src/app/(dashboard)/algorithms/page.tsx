@@ -36,22 +36,27 @@ interface ScalingPoint {
   operations: Record<string, number>;
 }
 
+import { DEFAULT_ALGORITHMS } from "@/data/defaultData";
+
 export default function AlgorithmsPage() {
   const router = useRouter();
-  const [algorithms, setAlgorithms] = useState<AlgorithmProfile[]>([]);
+  const [algorithms, setAlgorithms] = useState<AlgorithmProfile[]>(DEFAULT_ALGORITHMS);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [selectedAlgo, setSelectedAlgo] = useState<AlgorithmProfile | null>(null);
+  const [selectedAlgo, setSelectedAlgo] = useState<AlgorithmProfile | null>(DEFAULT_ALGORITHMS[0]);
   const [scalingPoints, setScalingPoints] = useState<ScalingPoint[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const fetchAlgorithms = async () => {
-    setIsLoading(true);
     try {
       const res = await api.get<AlgorithmProfile[]>("/benchmarks/matrix");
-      setAlgorithms(res.data);
-      if (res.data.length > 0) setSelectedAlgo(res.data[0]);
+      if (res.data && res.data.length > 0) {
+        setAlgorithms(res.data);
+        setSelectedAlgo(res.data[0]);
+      }
     } catch (e) {
-      console.error("Failed to load algorithm matrix", e);
+      // Fallback to local algorithms if offline/Vercel
+      setAlgorithms(DEFAULT_ALGORITHMS);
+      setSelectedAlgo(DEFAULT_ALGORITHMS[0]);
     } finally {
       setIsLoading(false);
     }

@@ -29,22 +29,27 @@ interface CurriculumTopicDetail {
   detailed_content: string;
 }
 
+import { DEFAULT_CURRICULUM_TOPICS } from "@/data/defaultData";
+
 export default function TopicDetailPage() {
   const params = useParams();
   const router = useRouter();
   const slug = params.slug as string;
 
-  const [topic, setTopic] = useState<CurriculumTopicDetail | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [topic, setTopic] = useState<CurriculumTopicDetail | null>(() => {
+    return DEFAULT_CURRICULUM_TOPICS.find((t) => t.slug === slug) || null;
+  });
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchDetail = async () => {
-      setIsLoading(true);
       try {
         const res = await api.get<CurriculumTopicDetail>(`/curriculum/topics/${slug}`);
-        setTopic(res.data);
+        if (res.data) setTopic(res.data);
       } catch (e) {
-        console.error("Failed to load topic details", e);
+        // Fallback to local topic if offline/Vercel
+        const fallback = DEFAULT_CURRICULUM_TOPICS.find((t) => t.slug === slug);
+        if (fallback) setTopic(fallback as any);
       } finally {
         setIsLoading(false);
       }
