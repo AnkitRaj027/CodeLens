@@ -8,15 +8,8 @@ import {
   Search, 
   Trash2, 
   ExternalLink, 
-  FileCode, 
   Calendar, 
-  Clock, 
-  Brain, 
-  Layers,
-  ArrowRight,
-  Filter,
-  CheckCircle2,
-  AlertCircle,
+  ArrowRight, 
   Loader2
 } from "lucide-react";
 
@@ -37,7 +30,6 @@ export default function HistoryPage() {
   const [selectedLang, setSelectedLang] = useState<string>("all");
   const [selectedComplexity, setSelectedComplexity] = useState<string>("all");
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const fetchHistory = async () => {
     setIsLoading(true);
@@ -59,7 +51,6 @@ export default function HistoryPage() {
     try {
       await api.delete(`/history/${id}`);
       setAnalyses(analyses.filter((a) => a.id !== id));
-      setDeleteId(null);
     } catch (e) {
       console.error("Failed to delete analysis", e);
     }
@@ -84,60 +75,58 @@ export default function HistoryPage() {
   };
 
   return (
-    <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#27272A] pb-4">
         <div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-blue-400 uppercase tracking-wider mb-1">
-            <History className="w-4 h-4" />
-            Analysis Archive & Audit Log
+          <div className="flex items-center gap-2 text-[10px] font-mono font-semibold text-blue-400 uppercase tracking-wider mb-1">
+            <History className="w-3.5 h-3.5" />
+            <span>Analysis Archive & Audit Log</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#F4F4F5] font-mono">
             Saved Analysis History
           </h1>
         </div>
 
         <Link
           href="/analyzer"
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md shadow-blue-600/25 transition-all w-fit"
+          className="flex items-center gap-2 px-3.5 py-1.5 rounded-md bg-[#F4F4F5] text-[#09090B] text-xs font-medium shadow-sm transition-all w-fit font-mono hover:bg-white"
         >
-          <span>Open IDE Analyzer</span>
+          <span>Open IDE</span>
           <ArrowRight className="w-3.5 h-3.5" />
         </Link>
       </div>
 
       {/* Filter & Search Toolbar */}
-      <div className="glass-panel rounded-2xl border border-slate-800/80 p-4 flex flex-wrap items-center justify-between gap-3 shadow-xl">
+      <div className="bg-[#111113] rounded-lg border border-[#27272A] p-3 flex flex-wrap items-center justify-between gap-3 shadow-sm">
         <div className="flex items-center gap-2 flex-1 min-w-[240px]">
           <div className="relative w-full">
-            <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-3.5 h-3.5 text-[#71717A] absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by title or code contents..."
-              className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-900 border border-slate-750 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              placeholder="Search by title or code statements..."
+              className="w-full pl-8 pr-3 py-1.5 rounded-md bg-[#18181B] border border-[#27272A] text-xs text-[#F4F4F5] placeholder-[#71717A] focus:outline-none focus:border-blue-500/50 font-mono"
             />
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5">
-          {/* Language Filter */}
+        <div className="flex items-center gap-2 font-mono text-xs">
           <select
             value={selectedLang}
             onChange={(e) => setSelectedLang(e.target.value)}
-            className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-750 text-xs text-slate-300 focus:outline-none cursor-pointer"
+            className="px-2.5 py-1.5 rounded-md bg-[#18181B] border border-[#27272A] text-xs text-[#A1A1AA] focus:outline-none cursor-pointer"
           >
             <option value="all">All Languages</option>
             <option value="python">Python</option>
             <option value="cpp">C++</option>
           </select>
 
-          {/* Complexity Filter */}
           <select
             value={selectedComplexity}
             onChange={(e) => setSelectedComplexity(e.target.value)}
-            className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-750 text-xs text-slate-300 focus:outline-none cursor-pointer"
+            className="px-2.5 py-1.5 rounded-md bg-[#18181B] border border-[#27272A] text-xs text-[#A1A1AA] focus:outline-none cursor-pointer"
           >
             <option value="all">All Complexities</option>
             <option value="O(1)">O(1)</option>
@@ -152,42 +141,39 @@ export default function HistoryPage() {
 
       {/* History Grid */}
       {isLoading ? (
-        <div className="py-20 flex flex-col items-center justify-center text-slate-500 font-mono text-xs gap-3">
-          <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
-          <span>Loading analysis archive...</span>
+        <div className="py-20 flex flex-col items-center justify-center text-[#71717A] font-mono text-xs gap-3">
+          <Loader2 className="w-5 h-5 animate-spin text-blue-400" />
+          <span>Loading analysis records...</span>
         </div>
       ) : filteredAnalyses.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredAnalyses.map((item) => (
             <div
               key={item.id}
-              className="glass-panel rounded-2xl border border-slate-800/80 p-5 flex flex-col justify-between hover:border-slate-700/80 transition-all group shadow-xl space-y-4"
+              className="bg-[#111113] rounded-lg border border-[#27272A] p-4 flex flex-col justify-between hover:border-[#3F3F46] transition-all group shadow-sm space-y-3 card-hover"
             >
-              {/* Card Header */}
               <div className="space-y-2">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded bg-slate-900 border border-slate-750 text-slate-400">
+                <div className="flex items-center justify-between gap-2 font-mono">
+                  <span className="text-[10px] uppercase font-semibold px-1.5 py-0.2 rounded bg-[#18181B] border border-[#27272A] text-[#71717A]">
                     {item.language}
                   </span>
-                  <span className={`text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full border ${getComplexityBadge(item.time_complexity)}`}>
-                    Time: {item.time_complexity}
+                  <span className={`text-[10px] font-bold px-2 py-0.2 rounded border ${getComplexityBadge(item.time_complexity)}`}>
+                    {item.time_complexity}
                   </span>
                 </div>
 
-                <h3 className="text-sm font-semibold text-white truncate group-hover:text-blue-400 transition-colors">
+                <h3 className="text-xs font-semibold text-[#F4F4F5] truncate group-hover:text-blue-400 transition-colors font-mono">
                   {item.title}
                 </h3>
               </div>
 
-              {/* Code Snippet Preview */}
-              <pre className="p-3 rounded-xl bg-slate-950/80 border border-slate-850 font-mono text-[11px] text-slate-300 overflow-hidden line-clamp-3 leading-relaxed">
+              <pre className="p-2.5 rounded-md bg-[#09090B] border border-[#27272A] font-mono text-[10px] text-[#A1A1AA] overflow-hidden line-clamp-3 leading-relaxed">
                 {item.source_code}
               </pre>
 
-              {/* Card Footer */}
-              <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-500">
-                <div className="flex items-center gap-1.5">
-                  <Calendar className="w-3.5 h-3.5" />
+              <div className="pt-2.5 border-t border-[#27272A] flex items-center justify-between text-[10px] font-mono text-[#71717A]">
+                <div className="flex items-center gap-1">
+                  <Calendar className="w-3 h-3" />
                   <span>{new Date(item.created_at).toLocaleDateString()}</span>
                 </div>
 
@@ -195,17 +181,16 @@ export default function HistoryPage() {
                   <button
                     onClick={() => handleDelete(item.id)}
                     title="Delete record"
-                    className="p-1.5 rounded-lg hover:bg-rose-500/10 hover:text-rose-400 text-slate-500 transition-colors"
+                    className="p-1 rounded hover:bg-rose-500/10 hover:text-rose-400 text-[#71717A] transition-colors"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <Trash2 className="w-3 h-3" />
                   </button>
                   <Link
                     href="/analyzer"
-                    title="Open in IDE"
-                    className="flex items-center gap-1 text-blue-400 hover:text-blue-300 font-medium transition-colors"
+                    className="flex items-center gap-1 text-blue-400 hover:text-[#F4F4F5] font-medium transition-colors"
                   >
                     <span>Inspect</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
+                    <ExternalLink className="w-3 h-3" />
                   </Link>
                 </div>
               </div>
@@ -213,19 +198,12 @@ export default function HistoryPage() {
           ))}
         </div>
       ) : (
-        <div className="glass-panel rounded-2xl border border-slate-800/80 p-12 text-center space-y-3 shadow-xl">
-          <History className="w-10 h-10 text-slate-600 mx-auto" />
-          <h3 className="text-sm font-semibold text-white">No Saved Analyses Found</h3>
-          <p className="text-xs text-slate-400 max-w-sm mx-auto">
-            Run an analysis in the IDE Analyzer and click "Save Analysis" to archive and review your algorithm benchmarks here.
+        <div className="bg-[#111113] rounded-lg border border-[#27272A] p-10 text-center space-y-3 shadow-sm">
+          <History className="w-8 h-8 text-[#3F3F46] mx-auto" />
+          <h3 className="text-xs font-semibold text-[#F4F4F5] font-mono">No Saved Analyses Found</h3>
+          <p className="text-xs text-[#71717A] max-w-sm mx-auto">
+            Analyze code in the IDE and click "Save Report" to archive benchmark snapshots here.
           </p>
-          <Link
-            href="/analyzer"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition-all mt-2"
-          >
-            <span>Analyze Source Code</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
         </div>
       )}
     </div>

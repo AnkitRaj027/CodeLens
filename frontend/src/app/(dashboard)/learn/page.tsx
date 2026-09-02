@@ -5,14 +5,8 @@ import Link from "next/link";
 import { api } from "@/lib/api";
 import { 
   GraduationCap, 
-  BookOpen, 
   Clock, 
   ArrowRight, 
-  Sparkles, 
-  CheckCircle2, 
-  TrendingUp,
-  Brain,
-  Code2,
   Loader2
 } from "lucide-react";
 
@@ -64,85 +58,79 @@ export default function LearnPage() {
       case "advanced":
         return "text-rose-400 bg-rose-500/10 border-rose-500/20";
       default:
-        return "text-slate-400 bg-slate-800 border-slate-700";
+        return "text-[#71717A] bg-[#18181B] border-[#27272A]";
     }
   };
 
   return (
-    <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       {/* Header Banner */}
-      <div className="glass-panel rounded-3xl border border-slate-800/80 p-6 sm:p-10 relative overflow-hidden shadow-2xl">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20"></div>
-        <div className="relative z-10 max-w-2xl space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-xs font-semibold text-blue-400 uppercase tracking-wider">
-            <GraduationCap className="w-3.5 h-3.5" />
-            <span>Interactive DSA Curriculum</span>
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-            Master Complexity Analysis
-          </h1>
-          <p className="text-sm text-slate-300 leading-relaxed">
-            From Big-O fundamentals to Master Theorem recurrence relations and space-time optimization tradeoffs — explore rigorous curriculum guides designed for students and engineers.
-          </p>
+      <div className="bg-[#111113] rounded-lg border border-[#27272A] p-6 sm:p-8 space-y-2 shadow-sm">
+        <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-md bg-[#18181B] border border-[#27272A] text-[10px] font-mono font-semibold text-blue-400 uppercase tracking-wider">
+          <GraduationCap className="w-3.5 h-3.5" />
+          <span>DSA Complexity Curriculum</span>
         </div>
+        <h1 className="text-xl sm:text-2xl font-bold text-[#F4F4F5] tracking-tight font-mono">
+          Master Algorithm Analysis
+        </h1>
+        <p className="text-xs text-[#A1A1AA] max-w-2xl leading-relaxed">
+          From Big-O asymptotic definitions to Master Theorem recurrence proofs and space-time optimization tradeoffs — explore rigorous curriculum guides.
+        </p>
       </div>
 
       {/* Category Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-800">
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-2 border-b border-[#27272A] font-mono text-xs">
         {categories.map((cat) => (
           <button
             key={cat}
             onClick={() => setSelectedCategory(cat)}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all capitalize ${
+            className={`px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-all capitalize ${
               selectedCategory === cat
-                ? "bg-blue-600 text-white shadow-md shadow-blue-600/25"
-                : "bg-slate-900 text-slate-400 hover:text-white border border-slate-800"
+                ? "bg-[#18181B] text-[#F4F4F5] border border-[#27272A]"
+                : "text-[#71717A] hover:text-[#F4F4F5] hover:bg-[#111113]"
             }`}
           >
-            {cat === "all" ? "All Topics" : cat}
+            {cat === "all" ? "All Modules" : cat}
           </button>
         ))}
       </div>
 
       {/* Topic Grid */}
       {isLoading ? (
-        <div className="py-20 flex flex-col items-center justify-center text-slate-500 font-mono text-xs gap-3">
-          <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+        <div className="py-20 flex flex-col items-center justify-center text-[#71717A] font-mono text-xs gap-3">
+          <Loader2 className="w-5 h-5 animate-spin text-blue-400" />
           <span>Loading curriculum modules...</span>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredTopics.map((t) => (
             <Link
               key={t.id}
               href={`/learn/${t.slug}`}
-              className="glass-panel rounded-2xl border border-slate-800/80 p-6 flex flex-col justify-between hover:border-blue-500/40 hover:shadow-2xl hover:shadow-blue-950/20 transition-all group space-y-5"
+              className="bg-[#111113] rounded-lg border border-[#27272A] p-5 flex flex-col justify-between hover:border-[#3F3F46] transition-all group space-y-4 shadow-sm card-hover"
             >
-              <div className="space-y-3">
-                {/* Meta Header */}
-                <div className="flex items-center justify-between gap-2">
-                  <span className={`text-[10px] font-semibold uppercase px-2.5 py-0.5 rounded-full border ${getDifficultyBadge(t.difficulty)}`}>
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between gap-2 font-mono">
+                  <span className={`text-[10px] font-semibold uppercase px-2 py-0.2 rounded border ${getDifficultyBadge(t.difficulty)}`}>
                     {t.difficulty}
                   </span>
-                  <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
-                    <Clock className="w-3.5 h-3.5" />
+                  <div className="flex items-center gap-1 text-[10px] text-[#71717A]">
+                    <Clock className="w-3 h-3" />
                     <span>{t.estimated_minutes} min read</span>
                   </div>
                 </div>
 
-                {/* Title & Summary */}
-                <h3 className="text-base font-bold text-white group-hover:text-blue-400 transition-colors">
+                <h3 className="text-sm font-semibold text-[#F4F4F5] group-hover:text-blue-400 transition-colors font-mono">
                   {t.title}
                 </h3>
-                <p className="text-xs text-slate-400 leading-relaxed line-clamp-2">
+                <p className="text-xs text-[#A1A1AA] leading-relaxed line-clamp-2">
                   {t.summary}
                 </p>
               </div>
 
-              {/* Takeaways Pill Preview */}
-              <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs font-semibold text-blue-400 group-hover:text-blue-300">
+              <div className="pt-3 border-t border-[#27272A] flex items-center justify-between text-xs font-medium text-blue-400 group-hover:text-[#F4F4F5] font-mono">
                 <span>Start Lesson</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
               </div>
             </Link>
           ))}

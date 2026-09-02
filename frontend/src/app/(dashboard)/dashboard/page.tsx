@@ -8,15 +8,11 @@ import {
   LayoutDashboard, 
   Terminal, 
   Trophy, 
-  Flame, 
   BookOpen, 
   ArrowRight, 
-  Sparkles, 
   CheckCircle2, 
   History, 
-  Layers,
-  BarChart3,
-  Clock
+  Layers
 } from "lucide-react";
 
 export default function DashboardPage() {
@@ -36,133 +32,127 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       {/* Welcome Banner */}
-      <div className="glass-panel rounded-3xl border border-slate-800/80 p-6 sm:p-10 relative overflow-hidden shadow-2xl">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20"></div>
-        <div className="relative z-10 max-w-2xl space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-xs font-semibold text-blue-400 uppercase tracking-wider">
-            <LayoutDashboard className="w-3.5 h-3.5" />
-            <span>Student Command Center</span>
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-            Welcome back, {user?.full_name || user?.email || "Student Engineer"}!
-          </h1>
-          <p className="text-sm text-slate-300 leading-relaxed">
-            Track your complexity analyses, challenge your algorithm intuition in the Practice Arena, and master DSA complexity proofs.
-          </p>
+      <div className="bg-[#111113] rounded-lg border border-[#27272A] p-6 sm:p-8 space-y-2 shadow-sm">
+        <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-md bg-[#18181B] border border-[#27272A] text-[10px] font-mono font-semibold text-blue-400 uppercase tracking-wider">
+          <LayoutDashboard className="w-3.5 h-3.5" />
+          <span>Student Command Center</span>
         </div>
+        <h1 className="text-xl sm:text-2xl font-bold text-[#F4F4F5] tracking-tight font-mono">
+          Welcome back, {user?.full_name || user?.email || "Student Engineer"}
+        </h1>
+        <p className="text-xs text-[#A1A1AA] max-w-xl leading-relaxed">
+          Track complexity analyses, challenge your algorithm intuition in the Practice Arena, and explore deterministic DSA proofs.
+        </p>
       </div>
 
       {/* Metrics Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <div className="glass-panel rounded-2xl border border-slate-800/80 p-5 space-y-2 shadow-xl">
-          <div className="flex items-center justify-between text-slate-400">
-            <span className="text-xs font-semibold uppercase tracking-wider">Saved Analyses</span>
-            <History className="w-4 h-4 text-blue-400" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 font-mono">
+        <div className="bg-[#111113] rounded-lg border border-[#27272A] p-4 space-y-1 shadow-sm">
+          <div className="flex items-center justify-between text-[#71717A]">
+            <span className="text-[10px] font-semibold uppercase tracking-wider">Saved Analyses</span>
+            <History className="w-3.5 h-3.5 text-blue-400" />
           </div>
-          <div className="text-2xl font-extrabold text-white font-mono">{historyCount}</div>
-          <p className="text-[11px] text-slate-500">Archived algorithm AST runs</p>
+          <div className="text-2xl font-bold text-[#F4F4F5]">{historyCount}</div>
+          <p className="text-[10px] text-[#71717A]">Archived AST runs</p>
         </div>
 
-        <div className="glass-panel rounded-2xl border border-slate-800/80 p-5 space-y-2 shadow-xl">
-          <div className="flex items-center justify-between text-slate-400">
-            <span className="text-xs font-semibold uppercase tracking-wider">Practice Points</span>
-            <Trophy className="w-4 h-4 text-amber-400" />
+        <div className="bg-[#111113] rounded-lg border border-[#27272A] p-4 space-y-1 shadow-sm">
+          <div className="flex items-center justify-between text-[#71717A]">
+            <span className="text-[10px] font-semibold uppercase tracking-wider">Practice Points</span>
+            <Trophy className="w-3.5 h-3.5 text-amber-400" />
           </div>
-          <div className="text-2xl font-extrabold text-amber-400 font-mono">100+</div>
-          <p className="text-[11px] text-slate-500">Earned in Complexity Arena</p>
+          <div className="text-2xl font-bold text-amber-400">100+</div>
+          <p className="text-[10px] text-[#71717A]">Complexity arena score</p>
         </div>
 
-        <div className="glass-panel rounded-2xl border border-slate-800/80 p-5 space-y-2 shadow-xl">
-          <div className="flex items-center justify-between text-slate-400">
-            <span className="text-xs font-semibold uppercase tracking-wider">Topics Mastered</span>
-            <BookOpen className="w-4 h-4 text-emerald-400" />
+        <div className="bg-[#111113] rounded-lg border border-[#27272A] p-4 space-y-1 shadow-sm">
+          <div className="flex items-center justify-between text-[#71717A]">
+            <span className="text-[10px] font-semibold uppercase tracking-wider">Topics Mastered</span>
+            <BookOpen className="w-3.5 h-3.5 text-emerald-400" />
           </div>
-          <div className="text-2xl font-extrabold text-emerald-400 font-mono">5 / 5</div>
-          <p className="text-[11px] text-slate-500">Core DSA curriculum guides</p>
+          <div className="text-2xl font-bold text-emerald-400">5 / 5</div>
+          <p className="text-[10px] text-[#71717A]">Curriculum modules</p>
         </div>
 
-        <div className="glass-panel rounded-2xl border border-slate-800/80 p-5 space-y-2 shadow-xl">
-          <div className="flex items-center justify-between text-slate-400">
-            <span className="text-xs font-semibold uppercase tracking-wider">Engine Accuracy</span>
-            <CheckCircle2 className="w-4 h-4 text-cyan-400" />
+        <div className="bg-[#111113] rounded-lg border border-[#27272A] p-4 space-y-1 shadow-sm">
+          <div className="flex items-center justify-between text-[#71717A]">
+            <span className="text-[10px] font-semibold uppercase tracking-wider">Engine Accuracy</span>
+            <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />
           </div>
-          <div className="text-2xl font-extrabold text-cyan-400 font-mono">100%</div>
-          <p className="text-[11px] text-slate-500">Deterministic static compiler AST</p>
+          <div className="text-2xl font-bold text-cyan-400">100%</div>
+          <p className="text-[10px] text-[#71717A]">Deterministic compiler AST</p>
         </div>
       </div>
 
-      {/* Quick Access Action Hub */}
-      <div className="space-y-4">
-        <h2 className="text-sm font-bold uppercase tracking-wider text-slate-300">
-          Core Workbenches & Tools
+      {/* Quick Launch Cards */}
+      <div className="space-y-3">
+        <h2 className="text-xs font-bold uppercase tracking-wider text-[#71717A] font-mono">
+          Workbenches & Tools
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Analyzer IDE */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Link
             href="/analyzer"
-            className="glass-panel rounded-2xl border border-slate-800/80 p-6 flex flex-col justify-between hover:border-blue-500/40 hover:shadow-2xl hover:shadow-blue-950/20 transition-all group space-y-4"
+            className="bg-[#111113] rounded-lg border border-[#27272A] p-5 flex flex-col justify-between hover:border-[#3F3F46] transition-all group space-y-3 shadow-sm card-hover"
           >
-            <div className="space-y-2.5">
-              <div className="w-10 h-10 rounded-xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400 group-hover:scale-105 transition-transform">
-                <Terminal className="w-5 h-5" />
+            <div className="space-y-2">
+              <div className="w-8 h-8 rounded-md bg-[#18181B] border border-[#27272A] flex items-center justify-center text-blue-400">
+                <Terminal className="w-4 h-4" />
               </div>
-              <h3 className="text-base font-bold text-white group-hover:text-blue-400 transition-colors">
+              <h3 className="text-sm font-semibold text-[#F4F4F5] group-hover:text-blue-400 transition-colors font-mono">
                 Complexity IDE Analyzer
               </h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Paste Python or C++ code to deterministically analyze loops, recursion trees, and memory space with AST node graphs.
+              <p className="text-xs text-[#A1A1AA] leading-relaxed">
+                Paste Python or C++ code to deterministically analyze loops, recursion trees, and memory space with AST graphs.
               </p>
             </div>
-            <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs font-semibold text-blue-400">
+            <div className="pt-3 border-t border-[#27272A] flex items-center justify-between text-xs font-medium text-blue-400 font-mono">
               <span>Launch IDE</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
             </div>
           </Link>
 
-          {/* Practice Arena */}
           <Link
             href="/practice"
-            className="glass-panel rounded-2xl border border-slate-800/80 p-6 flex flex-col justify-between hover:border-amber-500/40 hover:shadow-2xl hover:shadow-amber-950/20 transition-all group space-y-4"
+            className="bg-[#111113] rounded-lg border border-[#27272A] p-5 flex flex-col justify-between hover:border-[#3F3F46] transition-all group space-y-3 shadow-sm card-hover"
           >
-            <div className="space-y-2.5">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 group-hover:scale-105 transition-transform">
-                <Trophy className="w-5 h-5" />
+            <div className="space-y-2">
+              <div className="w-8 h-8 rounded-md bg-[#18181B] border border-[#27272A] flex items-center justify-center text-amber-400">
+                <Trophy className="w-4 h-4" />
               </div>
-              <h3 className="text-base font-bold text-white group-hover:text-amber-400 transition-colors">
-                Complexity Practice Arena
+              <h3 className="text-sm font-semibold text-[#F4F4F5] group-hover:text-amber-400 transition-colors font-mono">
+                Practice Arena
               </h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Test your Big-O intuition against real problem sets with instant automated grading and mathematical reasoning.
+              <p className="text-xs text-[#A1A1AA] leading-relaxed">
+                Test your Big-O intuition against real problem sets with instant automated grading and mathematical proofs.
               </p>
             </div>
-            <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs font-semibold text-amber-400">
+            <div className="pt-3 border-t border-[#27272A] flex items-center justify-between text-xs font-medium text-amber-400 font-mono">
               <span>Start Challenge</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
             </div>
           </Link>
 
-          {/* Algorithm Comparison */}
           <Link
             href="/algorithms"
-            className="glass-panel rounded-2xl border border-slate-800/80 p-6 flex flex-col justify-between hover:border-purple-500/40 hover:shadow-2xl hover:shadow-purple-950/20 transition-all group space-y-4"
+            className="bg-[#111113] rounded-lg border border-[#27272A] p-5 flex flex-col justify-between hover:border-[#3F3F46] transition-all group space-y-3 shadow-sm card-hover"
           >
-            <div className="space-y-2.5">
-              <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 group-hover:scale-105 transition-transform">
-                <Layers className="w-5 h-5" />
+            <div className="space-y-2">
+              <div className="w-8 h-8 rounded-md bg-[#18181B] border border-[#27272A] flex items-center justify-center text-indigo-400">
+                <Layers className="w-4 h-4" />
               </div>
-              <h3 className="text-base font-bold text-white group-hover:text-purple-400 transition-colors">
-                Algorithm Matrix & Sandbox
+              <h3 className="text-sm font-semibold text-[#F4F4F5] group-hover:text-indigo-400 transition-colors font-mono">
+                Algorithm Matrix
               </h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
+              <p className="text-xs text-[#A1A1AA] leading-relaxed">
                 Compare canonical search, sort, and DP algorithms side-by-side with theoretical operation scaling curves.
               </p>
             </div>
-            <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs font-semibold text-purple-400">
+            <div className="pt-3 border-t border-[#27272A] flex items-center justify-between text-xs font-medium text-indigo-400 font-mono">
               <span>Explore Matrix</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
             </div>
           </Link>
         </div>

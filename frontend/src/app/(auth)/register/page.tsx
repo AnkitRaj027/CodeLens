@@ -40,81 +40,81 @@ export default function RegisterPage() {
       <div className="w-full max-w-md space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
-          <div className="inline-flex p-3 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-xl shadow-blue-500/20 mb-2">
-            <Code2 className="w-8 h-8" />
+          <div className="inline-flex p-2.5 rounded-md bg-[#18181B] border border-[#27272A] text-[#F4F4F5] mb-2">
+            <Code2 className="w-6 h-6 text-blue-400" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">Create your CodeLens Account</h1>
-          <p className="text-sm text-slate-400">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#F4F4F5] font-mono">Create CodeLens Account</h1>
+          <p className="text-xs text-[#A1A1AA]">
             Master algorithm time and space complexity with deterministic AST insights
           </p>
         </div>
 
         {/* Card */}
-        <div className="glass-panel p-6 sm:p-8 rounded-2xl border border-slate-800 shadow-2xl">
+        <div className="bg-[#111113] p-6 sm:p-8 rounded-lg border border-[#27272A] shadow-sm">
           {error && (
-            <div className="mb-5 p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2">
+            <div className="mb-5 p-3 rounded-md bg-[#18181B] border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2 font-mono">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4 font-mono text-xs">
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1.5">Full Name</label>
+              <label className="block font-medium text-[#A1A1AA] mb-1.5">Full Name</label>
               <input
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="Ada Lovelace"
-                className="w-full px-3.5 py-2.5 rounded-lg bg-slate-900/90 border border-slate-750 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className="w-full px-3.5 py-2 rounded-md bg-[#18181B] border border-[#27272A] text-xs text-[#F4F4F5] placeholder-[#71717A] focus:outline-none focus:border-blue-500/50 transition-all font-mono"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1.5">Email Address</label>
+              <label className="block font-medium text-[#A1A1AA] mb-1.5">Email Address</label>
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="ada@computing.edu"
-                className="w-full px-3.5 py-2.5 rounded-lg bg-slate-900/90 border border-slate-750 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className="w-full px-3.5 py-2 rounded-md bg-[#18181B] border border-[#27272A] text-xs text-[#F4F4F5] placeholder-[#71717A] focus:outline-none focus:border-blue-500/50 transition-all font-mono"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1.5">Password</label>
+              <label className="block font-medium text-[#A1A1AA] mb-1.5">Password</label>
               <input
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Min. 6 characters"
-                className="w-full px-3.5 py-2.5 rounded-lg bg-slate-900/90 border border-slate-750 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className="w-full px-3.5 py-2 rounded-md bg-[#18181B] border border-[#27272A] text-xs text-[#F4F4F5] placeholder-[#71717A] focus:outline-none focus:border-blue-500/50 transition-all font-mono"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-2 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-medium text-sm shadow-lg shadow-blue-600/25 transition-all disabled:opacity-50"
+              className="w-full mt-2 flex items-center justify-center gap-2 py-2.5 px-4 rounded-md bg-[#F4F4F5] text-[#09090B] hover:bg-white font-medium text-xs shadow-sm transition-all disabled:opacity-50 font-sans font-semibold"
             >
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Creating account...
+                  <span>Creating account...</span>
                 </>
               ) : (
                 <>
                   <Sparkles className="w-4 h-4" />
-                  Create Free Account
+                  <span>Create Free Account</span>
                 </>
               )}
             </button>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-slate-800 text-center">
-            <p className="text-xs text-slate-400">
+          <div className="mt-6 pt-6 border-t border-[#27272A] text-center">
+            <p className="text-xs text-[#71717A]">
               Already have an account?{" "}
               <Link href="/login" className="text-blue-400 hover:text-blue-300 font-medium inline-flex items-center gap-1">
                 Sign in <ArrowRight className="w-3 h-3" />

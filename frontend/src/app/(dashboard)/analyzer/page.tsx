@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 
 export default function AnalyzerPage() {
-  const [code, setCode] = useState<string>(EXAMPLE_PRESETS[1].code); // Default to nested loops
+  const [code, setCode] = useState<string>(EXAMPLE_PRESETS[1].code_python);
   const [language, setLanguage] = useState<string>("python");
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [result, setResult] = useState<StaticAnalysisResult | null>(null);
@@ -29,19 +29,22 @@ export default function AnalyzerPage() {
   const [activeTab, setActiveTab] = useState<"findings" | "ai" | "diff" | "ast">("findings");
   const [savedSuccess, setSavedSuccess] = useState<boolean>(false);
   const [explanation, setExplanation] = useState<AIExplanationResult | null>(null);
+  const [lastParseDuration, setLastParseDuration] = useState<number>(0);
 
-  // Trigger analysis
   const runAnalysis = async (codeToAnalyze = code, langToAnalyze = language) => {
     if (!codeToAnalyze.trim()) return;
     setIsAnalyzing(true);
     setError(null);
     setSavedSuccess(false);
 
+    const startTime = performance.now();
     try {
       const res = await api.post<StaticAnalysisResult>("/analyze/static", {
         code: codeToAnalyze,
         language: langToAnalyze,
       });
+      const duration = Math.round(performance.now() - startTime);
+      setLastParseDuration(duration);
       setResult(res.data);
       
       // Auto-fetch explanation
@@ -66,12 +69,21 @@ export default function AnalyzerPage() {
     }
   };
 
-  // Run initial analysis on mount
   useEffect(() => {
-    runAnalysis(EXAMPLE_PRESETS[1].code, "python");
+    const transferredCode = typeof window !== "undefined" ? localStorage.getItem("codelens_transferred_code") : null;
+    const transferredLang = typeof window !== "undefined" ? localStorage.getItem("codelens_transferred_lang") : null;
+    if (transferredCode) {
+      localStorage.removeItem("codelens_transferred_code");
+      localStorage.removeItem("codelens_transferred_lang");
+      setCode(transferredCode);
+      const lang = transferredLang || "python";
+      setLanguage(lang);
+      runAnalysis(transferredCode, lang);
+    } else {
+      runAnalysis(EXAMPLE_PRESETS[1].code_python, "python");
+    }
   }, []);
 
-  // Save to history
   const handleSave = async () => {
     if (!result) return;
     try {
@@ -100,38 +112,48 @@ export default function AnalyzerPage() {
   };
 
   return (
-    <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-blue-400 uppercase tracking-wider mb-1">
-            <Terminal className="w-4 h-4" />
-            Deterministic AST Analyzer + Grounded AI
+    <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      {/* Top Telemetry Strip */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-[#111113] border border-[#27272A] p-3 rounded-lg text-xs font-mono text-[#A1A1AA]">
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-1.5 text-[#F4F4F5] font-medium">
+            <Terminal className="w-3.5 h-3.5 text-blue-400" />
+            <span>AST Workspace</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
-            Algorithm Complexity IDE
-          </h1>
+          <span className="text-[#27272A]">|</span>
+          <div className="flex items-center gap-1.5 text-[#71717A]">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+            <span>Deterministic Engine</span>
+          </div>
+          {lastParseDuration > 0 && (
+            <>
+              <span className="text-[#27272A]">|</span>
+              <div className="text-[#71717A]">
+                Latency: <span className="text-[#F4F4F5]">{lastParseDuration}ms</span>
+              </div>
+            </>
+          )}
         </div>
 
         {result && (
           <div className="flex items-center gap-2">
             <button
               onClick={handleSave}
-              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium border transition-all ${
                 savedSuccess
-                  ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-                  : "bg-slate-900 hover:bg-slate-850 text-slate-300 border-slate-750"
+                  ? "bg-[#18181B] text-emerald-400 border-emerald-500/30"
+                  : "bg-[#18181B] hover:bg-[#202024] text-[#F4F4F5] border-[#27272A]"
               }`}
             >
               {savedSuccess ? (
                 <>
-                  <Check className="w-3.5 h-3.5 text-emerald-400" />
-                  Saved to History
+                  <Check className="w-3 h-3 text-emerald-400" />
+                  <span>Archived</span>
                 </>
               ) : (
                 <>
                   <BookmarkPlus className="w-3.5 h-3.5 text-blue-400" />
-                  Save Analysis
+                  <span>Save Report</span>
                 </>
               )}
             </button>
@@ -139,22 +161,20 @@ export default function AnalyzerPage() {
         )}
       </div>
 
-      {/* Editor Section */}
+      {/* Code Editor */}
       <CodeEditor
         code={code}
         setCode={setCode}
         language={language}
-        setLanguage={(l) => {
-          setLanguage(l);
-        }}
+        setLanguage={(l) => setLanguage(l)}
         onAnalyze={() => runAnalysis(code, language)}
         isAnalyzing={isAnalyzing}
       />
 
       {/* Error Alert */}
       {error && (
-        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2.5">
-          <AlertCircle className="w-4 h-4 shrink-0" />
+        <div className="p-3.5 rounded-lg bg-[#18181B] border border-rose-500/30 text-rose-400 text-xs font-mono flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
           <span>{error}</span>
         </div>
       )}
@@ -166,53 +186,53 @@ export default function AnalyzerPage() {
           <ComplexityCard result={result} />
 
           {/* Tab Navigation */}
-          <div className="flex flex-wrap items-center gap-2 border-b border-slate-800 pb-3">
+          <div className="flex flex-wrap items-center gap-1.5 border-b border-[#27272A] pb-2 font-mono text-xs">
             <button
               onClick={() => setActiveTab("findings")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-medium transition-all ${
                 activeTab === "findings"
-                  ? "bg-blue-600/15 text-blue-400 border border-blue-500/30 shadow-sm"
-                  : "text-slate-400 hover:text-white hover:bg-slate-850"
+                  ? "bg-[#18181B] text-[#F4F4F5] border border-[#27272A]"
+                  : "text-[#71717A] hover:text-[#F4F4F5]"
               }`}
             >
-              <Layers className="w-4 h-4" />
-              Line-by-Line Breakdown ({result.line_findings.length})
+              <Layers className="w-3.5 h-3.5 text-blue-400" />
+              <span>Line Attribution ({result.line_findings.length})</span>
             </button>
 
             <button
               onClick={() => setActiveTab("ai")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-medium transition-all ${
                 activeTab === "ai"
-                  ? "bg-gradient-to-r from-blue-600/20 to-indigo-600/20 text-blue-300 border border-blue-500/40 shadow-sm"
-                  : "text-slate-400 hover:text-white hover:bg-slate-850"
+                  ? "bg-[#18181B] text-[#F4F4F5] border border-[#27272A]"
+                  : "text-[#71717A] hover:text-[#F4F4F5]"
               }`}
             >
-              <Brain className="w-4 h-4 text-cyan-400" />
-              AI Pedagogical Tutor
+              <Brain className="w-3.5 h-3.5 text-blue-400" />
+              <span>AI Tutor</span>
             </button>
 
             <button
               onClick={() => setActiveTab("diff")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-medium transition-all ${
                 activeTab === "diff"
-                  ? "bg-amber-500/15 text-amber-300 border border-amber-500/30 shadow-sm"
-                  : "text-slate-400 hover:text-white hover:bg-slate-850"
+                  ? "bg-[#18181B] text-[#F4F4F5] border border-[#27272A]"
+                  : "text-[#71717A] hover:text-[#F4F4F5]"
               }`}
             >
-              <Zap className="w-4 h-4 text-amber-400" />
-              Optimization Comparison
+              <Zap className="w-3.5 h-3.5 text-amber-400" />
+              <span>Optimization Diff</span>
             </button>
 
             <button
               onClick={() => setActiveTab("ast")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-medium transition-all ${
                 activeTab === "ast"
-                  ? "bg-blue-600/15 text-blue-400 border border-blue-500/30 shadow-sm"
-                  : "text-slate-400 hover:text-white hover:bg-slate-850"
+                  ? "bg-[#18181B] text-[#F4F4F5] border border-[#27272A]"
+                  : "text-[#71717A] hover:text-[#F4F4F5]"
               }`}
             >
-              <FolderTree className="w-4 h-4" />
-              AST Code Structure
+              <FolderTree className="w-3.5 h-3.5 text-indigo-400" />
+              <span>AST Inspector</span>
             </button>
           </div>
 

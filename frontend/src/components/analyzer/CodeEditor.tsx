@@ -1,114 +1,100 @@
 "use client";
 
-import React, { useRef } from "react";
-import dynamic from "next/dynamic";
+import React, { useRef, useEffect } from "react";
+import Editor from "@monaco-editor/react";
 import { 
   Play, 
-  Trash2, 
   Upload, 
-  Code2, 
+  Trash2, 
   Sparkles, 
+  FileCode, 
   ChevronDown, 
-  FileCode,
   Loader2
 } from "lucide-react";
-
-// Dynamically import Monaco Editor without SSR
-const Editor = dynamic(() => import("@monaco-editor/react"), {
-  ssr: false,
-  loading: () => (
-    <div className="h-[400px] w-full flex flex-col items-center justify-center bg-slate-950/80 text-slate-400 font-mono text-xs gap-3">
-      <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
-      <span>Loading CodeLens Monaco Editor...</span>
-    </div>
-  ),
-});
 
 export interface ExamplePreset {
   id: string;
   name: string;
   category: string;
-  code: string;
-  language: string;
+  complexity: string;
+  code_python: string;
+  code_cpp: string;
 }
 
 export const EXAMPLE_PRESETS: ExamplePreset[] = [
   {
-    id: "linear_loop",
-    name: "Linear Loop — O(n)",
-    category: "Basics",
-    language: "python",
-    code: `def print_elements(n):
-    # Single loop running n times
-    for i in range(n):
-        print("Processing element:", i)
-    return True`
+    id: "constant",
+    name: "Constant Elementary — O(1)",
+    category: "Foundations",
+    complexity: "O(1)",
+    code_python: `def get_first_element(arr):
+    # Direct index access runs in constant time O(1)
+    if len(arr) > 0:
+        return arr[0]
+    return None`,
+    code_cpp: `#include <vector>
+
+int getFirstElement(const std::vector<int>& arr) {
+    // Direct index access runs in constant time O(1)
+    if (!arr.empty()) {
+        return arr[0];
+    }
+    return -1;
+}`
   },
   {
     id: "nested_loops",
-    name: "Nested Loops — O(n²)",
-    category: "Quadratic",
-    language: "python",
-    code: `def print_pairs(n):
+    name: "Nested Loop Matrix — O(n²)",
+    category: "Polynomial Loops",
+    complexity: "O(n²)",
+    code_python: `def print_all_pairs(items):
     # Outer loop executes n times
-    for i in range(n):
-        # Inner loop executes n times per outer step
-        for j in range(n):
-            print(i, j)`
+    for i in items:
+        # Inner loop executes n times per outer iteration
+        for j in items:
+            print(i, j)`,
+    code_cpp: `#include <iostream>
+#include <vector>
+
+void printAllPairs(const std::vector<int>& items) {
+    // Outer loop executes n times
+    for (int i : items) {
+        // Inner loop executes n times per outer iteration
+        for (int j : items) {
+            std::cout << i << " " << j << "\\n";
+        }
+    }
+}`
   },
   {
     id: "dependent_loops",
-    name: "Dependent Loops — O(n²)",
-    category: "Quadratic",
-    language: "python",
-    code: `def triangular_sum(n):
-    # Total operations: 1 + 2 + 3 + ... + n = n*(n+1)/2 = O(n²)
+    name: "Triangular Dependent Loop — O(n²)",
+    category: "Summations",
+    complexity: "O(n²)",
+    code_python: `def print_triangle(n):
+    # Sum_{i=1}^n i = n(n+1)/2 = O(n²)
     for i in range(n):
         for j in range(i):
-            print(f"({i}, {j})")`
+            print(j, end=" ")
+        print()`,
+    code_cpp: `#include <iostream>
+
+void printTriangle(int n) {
+    // Sum_{i=1}^n i = n(n+1)/2 = O(n²)
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < i; j++) {
+            std::cout << j << " ";
+        }
+        std::cout << "\\n";
+    }
+}`
   },
   {
-    id: "binary_division",
-    name: "Binary Halving — O(log n)",
-    category: "Logarithmic",
-    language: "python",
-    code: `def divide_conquer_step(n):
-    # Repeated integer division by 2 runs in O(log n)
-    steps = 0
-    while n > 1:
-        n = n // 2
-        steps += 1
-    return steps`
-  },
-  {
-    id: "log_linear",
-    name: "Nested Log-Linear — O(n log n)",
-    category: "Log-Linear",
-    language: "python",
-    code: `def merge_style_loops(n):
-    # Outer loop O(n), inner while loop O(log n) -> O(n log n)
-    for i in range(n):
-        k = n
-        while k > 1:
-            k = k // 2`
-  },
-  {
-    id: "fibonacci_rec",
-    name: "Branching Recursion — O(2ⁿ)",
-    category: "Recursion",
-    language: "python",
-    code: `def fibonacci(n):
-    # T(n) = 2T(n-1) + O(1) -> O(2^n) time, O(n) call stack
-    if n <= 1:
-        return n
-    return fibonacci(n - 1) + fibonacci(n - 2)`
-  },
-  {
-    id: "binary_search_rec",
-    name: "Binary Search — O(log n)",
-    category: "Recursion",
-    language: "python",
-    code: `def binary_search(arr, low, high, target):
+    id: "binary_search",
+    name: "Logarithmic Search — O(log n)",
+    category: "Divide & Conquer",
+    complexity: "O(log n)",
+    code_python: `def binary_search(arr, low, high, target):
     # T(n) = T(n/2) + O(1) -> O(log n) time, O(log n) call stack
     if low > high:
         return -1
@@ -118,43 +104,67 @@ export const EXAMPLE_PRESETS: ExamplePreset[] = [
     elif arr[mid] > target:
         return binary_search(arr, low, mid - 1, target)
     else:
-        return binary_search(arr, mid + 1, high, target)`
-  },
-  {
-    id: "cpp_nested",
-    name: "C++ Nested Grid — O(n²)",
-    category: "C++ Algorithms",
-    language: "cpp",
-    code: `#include <iostream>
+        return binary_search(arr, mid + 1, high, target)`,
+    code_cpp: `#include <vector>
 
-void printGrid(int n) {
-    // Outer loop O(n), Inner loop O(n) -> O(n²)
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            std::cout << i << " " << j << "\\n";
-        }
-    }
+int binarySearch(const std::vector<int>& arr, int low, int high, int target) {
+    // T(n) = T(n/2) + O(1) -> O(log n) time, O(log n) call stack
+    if (low > high) return -1;
+    int mid = low + (high - low) / 2;
+    if (arr[mid] == target) return mid;
+    if (arr[mid] > target) return binarySearch(arr, low, mid - 1, target);
+    return binarySearch(arr, mid + 1, high, target);
 }`
   },
   {
-    id: "cpp_fibonacci",
-    name: "C++ Branching Tree — O(2ⁿ)",
-    category: "C++ Recursion",
-    language: "cpp",
-    code: `#include <iostream>
+    id: "merge_sort",
+    name: "Merge Sort Divide & Conquer — O(n log n)",
+    category: "Recurrence",
+    complexity: "O(n log n)",
+    code_python: `def merge_sort(arr):
+    # T(n) = 2T(n/2) + O(n) -> O(n log n)
+    if len(arr) <= 1:
+        return arr
+    mid = len(arr) // 2
+    left = merge_sort(arr[:mid])
+    right = merge_sort(arr[mid:])
+    return left + right`,
+    code_cpp: `#include <vector>
 
-int fibonacci(int n) {
-    // T(n) = 2T(n-1) + O(1) -> O(2^n) time, O(n) stack
+void mergeSort(std::vector<int>& arr, int l, int r) {
+    // T(n) = 2T(n/2) + O(n) -> O(n log n)
+    if (l >= r) return;
+    int mid = l + (r - l) / 2;
+    mergeSort(arr, l, mid);
+    mergeSort(arr, mid + 1, r);
+}`
+  },
+  {
+    id: "fibonacci_rec",
+    name: "Branching Recursion Tree — O(2ⁿ)",
+    category: "Recursion Trees",
+    complexity: "O(2ⁿ)",
+    code_python: `def fibonacci(n):
+    # T(n) = 2T(n-1) + O(1) -> O(2^n) time, O(n) call stack
+    if n <= 1:
+        return n
+    return fibonacci(n - 1) + fibonacci(n - 2)`,
+    code_cpp: `int fibonacci(int n) {
+    // T(n) = 2T(n-1) + O(1) -> O(2^n) time, O(n) call stack
     if (n <= 1) return n;
     return fibonacci(n - 1) + fibonacci(n - 2);
 }`
   },
   {
-    id: "cpp_vector_alloc",
-    name: "C++ 2D Matrix — Space O(n²)",
-    category: "C++ Memory",
-    language: "cpp",
-    code: `#include <vector>
+    id: "vector_alloc",
+    name: "2D Matrix Grid — Space O(n²)",
+    category: "Memory Allocation",
+    complexity: "Space O(n²)",
+    code_python: `def create_grid(n, m):
+    # Allocates quadratic auxiliary heap memory O(n*m)
+    matrix = [[0] * m for _ in range(n)]
+    return matrix`,
+    code_cpp: `#include <vector>
 
 void createGrid(int n, int m) {
     // Allocates quadratic auxiliary heap memory O(n*m)
@@ -182,6 +192,31 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Keyboard shortcut: Ctrl + Enter to run analysis
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        e.preventDefault();
+        if (!isAnalyzing && code.trim()) {
+          onAnalyze();
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [code, isAnalyzing, onAnalyze]);
+
+  const handleLanguageChange = (newLang: string) => {
+    setLanguage(newLang);
+    // If the editor currently contains one of the presets in the old language, convert it to the new language
+    const currentPreset = EXAMPLE_PRESETS.find(
+      (p) => p.code_python.trim() === code.trim() || p.code_cpp.trim() === code.trim()
+    );
+    if (currentPreset) {
+      setCode(newLang === "cpp" ? currentPreset.code_cpp : currentPreset.code_python);
+    }
+  };
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -189,7 +224,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
       reader.onload = (event) => {
         const content = event.target?.result as string;
         setCode(content);
-        if (file.name.endsWith(".cpp") || file.name.endsWith(".cc") || file.name.endsWith(".h")) {
+        if (file.name.endsWith(".cpp") || file.name.endsWith(".cc") || file.name.endsWith(".h") || file.name.endsWith(".hpp")) {
           setLanguage("cpp");
         } else if (file.name.endsWith(".py")) {
           setLanguage("python");
@@ -204,70 +239,75 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   };
 
   const handlePresetSelect = (preset: ExamplePreset) => {
-    setCode(preset.code);
-    setLanguage(preset.language);
+    // Respect the currently selected language
+    const presetCode = language === "cpp" ? preset.code_cpp : preset.code_python;
+    setCode(presetCode);
   };
 
   return (
-    <div className="glass-panel rounded-2xl border border-slate-800/80 overflow-hidden flex flex-col shadow-2xl">
+    <div className="bg-[#111113] rounded-lg border border-[#27272A] overflow-hidden flex flex-col shadow-sm">
       {/* Editor Toolbar */}
-      <div className="px-4 py-3 bg-slate-950/90 border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-3">
+      <div className="px-4 py-2.5 bg-[#111113] border-b border-[#27272A] flex flex-wrap items-center justify-between gap-3">
         {/* Left: Language & Presets */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           {/* Language Selector */}
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-750 text-xs font-medium text-slate-300">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#18181B] border border-[#27272A] text-xs font-mono text-[#A1A1AA]">
             <FileCode className="w-3.5 h-3.5 text-blue-400" />
             <select
               value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              className="bg-transparent text-slate-200 focus:outline-none cursor-pointer"
+              onChange={(e) => handleLanguageChange(e.target.value)}
+              className="bg-transparent text-[#F4F4F5] focus:outline-none cursor-pointer text-xs font-mono"
             >
-              <option value="python" className="bg-slate-900 text-white">Python 3</option>
-              <option value="cpp" className="bg-slate-900 text-white">C++ 20</option>
+              <option value="python" className="bg-[#18181B] text-[#F4F4F5]">Python 3</option>
+              <option value="cpp" className="bg-[#18181B] text-[#F4F4F5]">C++ 20</option>
             </select>
           </div>
 
-          {/* Example Presets Dropdown */}
+          {/* Presets Dropdown */}
           <div className="relative group">
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-850 border border-slate-750 text-xs font-medium text-slate-300 transition-colors">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>Examples</span>
-              <ChevronDown className="w-3 h-3 text-slate-400" />
+            <button className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#18181B] hover:bg-[#202024] border border-[#27272A] text-xs font-mono text-[#A1A1AA] hover:text-[#F4F4F5] transition-colors">
+              <Sparkles className="w-3 h-3 text-amber-400" />
+              <span>Presets ({language === "cpp" ? "C++" : "Python"})</span>
+              <ChevronDown className="w-3 h-3 text-[#71717A]" />
             </button>
-            <div className="absolute left-0 top-full mt-1.5 w-64 rounded-xl bg-slate-900 border border-slate-750 shadow-2xl p-1.5 hidden group-hover:block z-50">
-              <div className="px-2.5 py-1 text-[10px] uppercase font-semibold text-slate-500 tracking-wider">
-                Select Example Code
+            <div className="absolute left-0 top-full mt-1.5 w-72 rounded-md bg-[#18181B] border border-[#27272A] shadow-2xl p-1.5 hidden group-hover:block z-50">
+              <div className="px-2.5 py-1 text-[10px] uppercase font-mono font-semibold text-[#71717A] tracking-wider flex items-center justify-between">
+                <span>Algorithm Presets</span>
+                <span className="text-blue-400 uppercase">{language}</span>
               </div>
               {EXAMPLE_PRESETS.map((p) => (
                 <button
                   key={p.id}
                   onClick={() => handlePresetSelect(p)}
-                  className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs text-slate-300 hover:text-white hover:bg-blue-600/20 hover:border-blue-500/30 transition-all flex flex-col"
+                  className="w-full text-left px-2.5 py-1.5 rounded text-xs text-[#A1A1AA] hover:text-[#F4F4F5] hover:bg-[#27272A] transition-all flex flex-col font-mono group/btn"
                 >
-                  <span className="font-medium">{p.name}</span>
-                  <span className="text-[10px] text-slate-500">{p.category}</span>
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-[11px] group-hover/btn:text-blue-400">{p.name}</span>
+                    <span className="text-[10px] text-blue-400/80">{p.complexity}</span>
+                  </div>
+                  <span className="text-[10px] text-[#71717A]">{p.category}</span>
                 </button>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Right: Actions */}
+        {/* Right: Actions & Run Shortcut */}
         <div className="flex items-center gap-2">
           {/* File Upload */}
           <input
             type="file"
             ref={fileInputRef}
             onChange={handleFileUpload}
-            accept=".py,.cpp,.cc,.c,.txt"
+            accept=".py,.cpp,.cc,.c,.h,.hpp,.txt"
             className="hidden"
           />
           <button
             onClick={() => fileInputRef.current?.click()}
             title="Upload source file"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-medium border border-slate-750 transition-colors"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#18181B] hover:bg-[#202024] text-[#A1A1AA] hover:text-[#F4F4F5] text-xs font-mono border border-[#27272A] transition-colors"
           >
-            <Upload className="w-3.5 h-3.5 text-slate-400" />
+            <Upload className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Upload</span>
           </button>
 
@@ -275,27 +315,29 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
           <button
             onClick={handleClear}
             title="Clear editor"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-rose-500/10 hover:text-rose-400 text-slate-400 text-xs font-medium border border-slate-750 hover:border-rose-500/30 transition-colors"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#18181B] hover:bg-rose-500/10 hover:text-rose-400 text-[#71717A] text-xs font-mono border border-[#27272A] hover:border-rose-500/30 transition-colors"
           >
             <Trash2 className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Clear</span>
           </button>
 
           {/* Primary Analyze Button */}
           <button
             onClick={onAnalyze}
             disabled={isAnalyzing || !code.trim()}
-            className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-semibold shadow-md shadow-blue-600/30 transition-all disabled:opacity-50 hover:scale-[1.02]"
+            className="flex items-center gap-2 px-3.5 py-1.5 rounded-md bg-[#F4F4F5] text-[#09090B] hover:bg-white font-medium text-xs shadow-sm transition-all disabled:opacity-50 font-mono"
           >
             {isAnalyzing ? (
               <>
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                Analyzing AST...
+                <span>Parsing AST...</span>
               </>
             ) : (
               <>
-                <Play className="w-3.5 h-3.5 fill-current" />
-                Analyze Complexity
+                <Play className="w-3 h-3 fill-current" />
+                <span>Analyze</span>
+                <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1 py-0.2 text-[9px] font-mono text-[#71717A] bg-[#E4E4E7] rounded">
+                  Ctrl ↵
+                </kbd>
               </>
             )}
           </button>
@@ -303,7 +345,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
       </div>
 
       {/* Monaco Code Editor Canvas */}
-      <div className="h-[420px] w-full bg-[#0d1117]">
+      <div className="h-[430px] w-full bg-[#09090B]">
         <Editor
           height="100%"
           language={language === "cpp" ? "cpp" : "python"}
@@ -312,7 +354,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
           theme="vs-dark"
           options={{
             fontSize: 13,
-            fontFamily: "'JetBrains Mono', 'Fira Code', Menlo, monospace",
+            fontFamily: "'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace",
             minimap: { enabled: false },
             scrollBeyondLastLine: false,
             automaticLayout: true,

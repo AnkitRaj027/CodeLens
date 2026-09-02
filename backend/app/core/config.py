@@ -23,9 +23,11 @@ class Settings(BaseSettings):
         "http://localhost:8000",
     ]
 
-    # AI Configuration (Optional Gemini/OpenAI API key)
+    # AI Configuration (Optional Mistral / Gemini / OpenAI / NVIDIA NIM API key)
+    MISTRAL_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
     OPENAI_API_KEY: str = ""
+    NVIDIA_API_KEY: str = ""
     
     model_config = SettingsConfigDict(
         env_file=".env", 

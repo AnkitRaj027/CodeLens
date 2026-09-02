@@ -9,12 +9,10 @@ import {
   GraduationCap, 
   Brain, 
   TrendingUp, 
-  HelpCircle, 
   Send, 
   Loader2, 
-  ShieldCheck,
-  Lightbulb,
-  CheckCircle2
+  CheckCircle2, 
+  Lightbulb
 } from "lucide-react";
 
 interface AITutorPanelProps {
@@ -63,32 +61,32 @@ export const AITutorPanel: React.FC<AITutorPanelProps> = ({ code, language, resu
     `Why is this ${result.time_complexity}?`,
     "What happens if N doubles from 1,000 to 2,000?",
     "Can this be optimized to O(n) or O(1)?",
-    "Explain like I'm learning DSA for interviews"
+    "Explain like I'm in a technical interview"
   ];
 
   return (
-    <div className="glass-panel rounded-2xl border border-slate-800/80 p-5 sm:p-6 space-y-6 shadow-2xl">
+    <div className="bg-[#111113] rounded-lg border border-[#27272A] p-5 sm:p-6 space-y-6 shadow-sm">
       {/* Header & Mode Selector */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#27272A] pb-4 font-mono">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+          <div className="w-7 h-7 rounded-md bg-[#18181B] border border-[#27272A] flex items-center justify-center text-blue-400">
             <Brain className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              <span>Grounded AI DSA Tutor</span>
-              <span className="text-[10px] uppercase font-semibold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                Grounded in AST Truth
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-[#F4F4F5] flex items-center gap-2">
+              <span>Grounded AI Tutor</span>
+              <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                AST Grounded
               </span>
             </h3>
-            <p className="text-[11px] text-slate-400">
-              Deterministic static bounds injected as strict immutable constraints
+            <p className="text-[10px] text-[#71717A]">
+              Deterministic bounds injected as immutable ground truth
             </p>
           </div>
         </div>
 
         {/* Mode Selector Tabs */}
-        <div className="flex items-center bg-slate-900 p-1 rounded-xl border border-slate-800 text-xs">
+        <div className="flex items-center bg-[#18181B] p-1 rounded-md border border-[#27272A] text-xs">
           {[
             { id: "beginner", label: "Beginner", icon: BookOpen },
             { id: "intermediate", label: "University", icon: GraduationCap },
@@ -101,13 +99,13 @@ export const AITutorPanel: React.FC<AITutorPanelProps> = ({ code, language, resu
               <button
                 key={tab.id}
                 onClick={() => setMode(tab.id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium transition-all ${
                   isActive
-                    ? "bg-blue-600 text-white shadow-sm"
-                    : "text-slate-400 hover:text-slate-200"
+                    ? "bg-[#27272A] text-[#F4F4F5] shadow-sm"
+                    : "text-[#71717A] hover:text-[#A1A1AA]"
                 }`}
               >
-                <Icon className="w-3.5 h-3.5" />
+                <Icon className="w-3 h-3" />
                 <span className="hidden sm:inline">{tab.label}</span>
               </button>
             );
@@ -117,29 +115,29 @@ export const AITutorPanel: React.FC<AITutorPanelProps> = ({ code, language, resu
 
       {/* Loading state */}
       {isLoading ? (
-        <div className="py-12 flex flex-col items-center justify-center text-slate-400 font-mono text-xs gap-3">
-          <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+        <div className="py-12 flex flex-col items-center justify-center text-[#71717A] font-mono text-xs gap-3">
+          <Loader2 className="w-5 h-5 animate-spin text-blue-400" />
           <span>Synthesizing pedagogical breakdown...</span>
         </div>
       ) : explanation ? (
-        <div className="space-y-6">
+        <div className="space-y-5">
           {/* Summary Box */}
-          <div className="p-4 rounded-xl bg-blue-950/20 border border-blue-500/20 text-xs text-slate-300 leading-relaxed space-y-1">
-            <span className="text-[10px] uppercase font-semibold text-blue-400 tracking-wider block">
+          <div className="p-4 rounded-md bg-[#18181B] border border-[#27272A] text-xs text-[#A1A1AA] leading-relaxed space-y-1">
+            <span className="text-[10px] uppercase font-mono font-semibold text-blue-400 tracking-wider block">
               Pedagogical Overview ({mode.toUpperCase()})
             </span>
-            <p className="text-slate-200 text-sm">{explanation.summary}</p>
+            <p className="text-[#F4F4F5] text-xs leading-relaxed">{explanation.summary}</p>
           </div>
 
           {/* Step-by-Step Reasoning */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <div className="space-y-2.5">
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-[#F4F4F5] flex items-center gap-2 font-mono">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
               Step-by-Step Complexity Proof
             </h4>
             <div className="space-y-2">
               {explanation.step_by_step_reasoning.map((step, idx) => (
-                <div key={idx} className="p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-xs text-slate-300 leading-relaxed">
+                <div key={idx} className="p-3 rounded-md bg-[#18181B] border border-[#27272A] text-xs text-[#A1A1AA] leading-relaxed font-mono">
                   {step}
                 </div>
               ))}
@@ -147,31 +145,31 @@ export const AITutorPanel: React.FC<AITutorPanelProps> = ({ code, language, resu
           </div>
 
           {/* N Doubling Scaling Card */}
-          <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2">
-            <div className="flex items-center gap-2 text-xs font-semibold text-amber-400 uppercase tracking-wider">
-              <TrendingUp className="w-4 h-4" />
+          <div className="p-4 rounded-md bg-[#18181B] border border-[#27272A] space-y-1.5">
+            <div className="flex items-center gap-2 text-xs font-semibold text-amber-400 uppercase tracking-wider font-mono">
+              <TrendingUp className="w-3.5 h-3.5" />
               <span>Input Scaling Analysis (What if N doubles?)</span>
             </div>
-            <p className="text-xs text-slate-300 leading-relaxed">
+            <p className="text-xs text-[#A1A1AA] leading-relaxed">
               {explanation.what_happens_if_n_doubles}
             </p>
           </div>
 
           {/* Learning Takeaway */}
-          <div className="p-4 rounded-xl bg-gradient-to-r from-blue-950/30 to-indigo-950/30 border border-blue-500/20 flex items-start gap-3 text-xs">
+          <div className="p-4 rounded-md bg-[#18181B] border border-[#27272A] flex items-start gap-3 text-xs">
             <Lightbulb className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
             <div>
-              <span className="font-semibold text-white block mb-0.5">Key Takeaway:</span>
-              <span className="text-slate-300">{explanation.learning_takeaway}</span>
+              <span className="font-semibold text-[#F4F4F5] block mb-0.5 font-mono">Core Principle:</span>
+              <span className="text-[#A1A1AA]">{explanation.learning_takeaway}</span>
             </div>
           </div>
         </div>
       ) : null}
 
       {/* Interactive Natural Language Ask Box */}
-      <div className="pt-4 border-t border-slate-800/80 space-y-3">
-        <label className="block text-xs font-medium text-slate-300">
-          Ask a Question About This Code's Complexity:
+      <div className="pt-4 border-t border-[#27272A] space-y-3 font-mono">
+        <label className="block text-xs font-medium text-[#71717A]">
+          Ask a Question About This Complexity Bound:
         </label>
         
         {/* Sample Question Chips */}
@@ -180,7 +178,7 @@ export const AITutorPanel: React.FC<AITutorPanelProps> = ({ code, language, resu
             <button
               key={idx}
               onClick={() => handleAskQuestion(q)}
-              className="text-[11px] px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-850 border border-slate-750 text-slate-400 hover:text-blue-300 transition-colors"
+              className="text-[10px] px-2.5 py-1 rounded-md bg-[#18181B] hover:bg-[#202024] border border-[#27272A] text-[#71717A] hover:text-[#F4F4F5] transition-colors"
             >
               {q}
             </button>
@@ -194,12 +192,12 @@ export const AITutorPanel: React.FC<AITutorPanelProps> = ({ code, language, resu
             onChange={(e) => setCustomQuestion(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && customQuestion.trim() && handleAskQuestion(customQuestion)}
             placeholder="e.g. Can this loop be parallelized or solved with two pointers?"
-            className="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-750 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+            className="flex-1 px-3.5 py-2 rounded-md bg-[#18181B] border border-[#27272A] text-xs text-[#F4F4F5] placeholder-[#71717A] focus:outline-none focus:border-blue-500/50 transition-all font-mono"
           />
           <button
             onClick={() => customQuestion.trim() && handleAskQuestion(customQuestion)}
             disabled={isLoading || !customQuestion.trim()}
-            className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs shadow-md shadow-blue-600/25 transition-all disabled:opacity-50 flex items-center gap-1.5"
+            className="px-4 py-2 rounded-md bg-[#F4F4F5] text-[#09090B] hover:bg-white font-medium text-xs transition-all disabled:opacity-50 flex items-center gap-1.5"
           >
             <Send className="w-3.5 h-3.5" />
             <span>Ask</span>

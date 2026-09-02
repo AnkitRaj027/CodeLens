@@ -14,7 +14,7 @@ async def test_ai_explanation_quadratic():
         confidence="HIGH",
         mode="intermediate"
     )
-    res = await AIService.generate_explanation(req)
+    res = AIService._generate_deterministic_explanation(req)
     assert res.explanation_mode == "intermediate"
     assert len(res.step_by_step_reasoning) > 0
     assert "quadruple" in res.what_happens_if_n_doubles.lower() or "4x" in res.what_happens_if_n_doubles.lower()

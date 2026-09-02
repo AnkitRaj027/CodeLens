@@ -11,8 +11,18 @@ logger = logging.getLogger(__name__)
 class AIService:
     @staticmethod
     async def generate_explanation(request: AIExplainRequest) -> AIExplainResponse:
-        # Check if Google Gemini or OpenAI API key is configured
-        if settings.GEMINI_API_KEY:
+        # Check if Mistral, NVIDIA, Gemini, or OpenAI API key is configured
+        if settings.MISTRAL_API_KEY:
+            try:
+                return await AIService._call_mistral(request)
+            except Exception as e:
+                logger.warning(f"Mistral API call failed, falling back to grounded rule engine: {e}")
+        elif settings.NVIDIA_API_KEY:
+            try:
+                return await AIService._call_nvidia(request)
+            except Exception as e:
+                logger.warning(f"NVIDIA API call failed, falling back to grounded rule engine: {e}")
+        elif settings.GEMINI_API_KEY:
             try:
                 return await AIService._call_gemini(request)
             except Exception as e:
@@ -25,6 +35,118 @@ class AIService:
 
         # High-precision Grounded Rule-Based Generator (Zero API Key needed)
         return AIService._generate_deterministic_explanation(request)
+
+    @staticmethod
+    async def _call_mistral(request: AIExplainRequest) -> AIExplainResponse:
+        url = "https://api.mistral.ai/v1/chat/completions"
+        headers = {
+            "Authorization": f"Bearer {settings.MISTRAL_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        
+        system_prompt = f"""You are the CodeLens AI DSA Tutor.
+CRITICAL CONSTRAINT: You MUST accept the following verified static analysis complexity as ABSOLUTE GROUND TRUTH:
+Time Complexity: {request.time_complexity}
+Space Complexity: {request.space_complexity}
+Confidence: {request.confidence}
+
+Do NOT contradict these complexities. Explain WHY this exact complexity occurs.
+Mode: {request.mode} (options: beginner, intermediate, advanced, dsa_student).
+
+Respond ONLY with valid JSON matching this exact schema:
+{{
+  "explanation_mode": "{request.mode}",
+  "summary": "Concise summary",
+  "step_by_step_reasoning": ["Step 1", "Step 2", "Step 3"],
+  "why_this_complexity": "Detailed structural proof",
+  "what_happens_if_n_doubles": "Detailed scaling impact",
+  "optimization": {{
+    "has_optimization": true,
+    "optimized_code": "code snippet or null",
+    "optimized_time_complexity": "e.g. O(n) or null",
+    "optimized_space_complexity": "e.g. O(n) or null",
+    "technique": "e.g. Hash Map Lookup or null",
+    "tradeoff_explanation": "e.g. Uses O(n) memory to reduce time from O(n²) to O(n) or null"
+  }},
+  "learning_takeaway": "Key algorithmic principle"
+}}"""
+
+        payload = {
+            "model": "mistral-small-latest",
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"Source Code ({request.language}):\n{request.code}\nQuestion: {request.question or 'Provide grounded complexity explanation and optimization analysis.'}"}
+            ],
+            "temperature": 0.2,
+            "max_tokens": 1024,
+            "response_format": {"type": "json_object"}
+        }
+
+        async with httpx.AsyncClient(timeout=25.0) as client:
+            resp = await client.post(url, headers=headers, json=payload)
+            if resp.status_code == 200:
+                data = resp.json()
+                content = data["choices"][0]["message"]["content"]
+                parsed = json.loads(content)
+                return AIExplainResponse(**parsed)
+            else:
+                raise Exception(f"Mistral API returned status {resp.status_code}: {resp.text}")
+
+    @staticmethod
+    async def _call_nvidia(request: AIExplainRequest) -> AIExplainResponse:
+        url = "https://integrate.api.nvidia.com/v1/chat/completions"
+        headers = {
+            "Authorization": f"Bearer {settings.NVIDIA_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        
+        system_prompt = f"""You are the CodeLens AI DSA Tutor.
+CRITICAL CONSTRAINT: You MUST accept the following verified static analysis complexity as ABSOLUTE GROUND TRUTH:
+Time Complexity: {request.time_complexity}
+Space Complexity: {request.space_complexity}
+Confidence: {request.confidence}
+
+Do NOT contradict these complexities. Explain WHY this exact complexity occurs.
+Mode: {request.mode} (options: beginner, intermediate, advanced, dsa_student).
+
+Respond ONLY with valid JSON matching this exact schema:
+{{
+  "explanation_mode": "{request.mode}",
+  "summary": "Concise summary",
+  "step_by_step_reasoning": ["Step 1", "Step 2", "Step 3"],
+  "why_this_complexity": "Detailed structural proof",
+  "what_happens_if_n_doubles": "Detailed scaling impact",
+  "optimization": {{
+    "has_optimization": true,
+    "optimized_code": "code snippet or null",
+    "optimized_time_complexity": "e.g. O(n) or null",
+    "optimized_space_complexity": "e.g. O(n) or null",
+    "technique": "e.g. Hash Map Lookup or null",
+    "tradeoff_explanation": "e.g. Uses O(n) memory to reduce time from O(n²) to O(n) or null"
+  }},
+  "learning_takeaway": "Key algorithmic principle"
+}}"""
+
+        payload = {
+            "model": "meta/llama-3.3-70b-instruct",
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"Source Code ({request.language}):\n{request.code}\nQuestion: {request.question or 'Provide grounded complexity explanation and optimization analysis.'}"}
+            ],
+            "temperature": 0.2,
+            "max_tokens": 1024,
+            "response_format": {"type": "json_object"}
+        }
+
+        async with httpx.AsyncClient(timeout=20.0) as client:
+            resp = await client.post(url, headers=headers, json=payload)
+            if resp.status_code == 200:
+                data = resp.json()
+                content = data["choices"][0]["message"]["content"]
+                parsed = json.loads(content)
+                return AIExplainResponse(**parsed)
+            else:
+                raise Exception(f"NVIDIA API returned status {resp.status_code}: {resp.text}")
 
     @staticmethod
     async def _call_gemini(request: AIExplainRequest) -> AIExplainResponse:
