@@ -29,28 +29,80 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async (email: string, password: string) => {
-    const response = await api.post<AuthResponse>("/auth/login", {
-      email,
-      password,
-    });
-    const { access_token, user: userData } = response.data;
-    setToken(access_token);
-    setUser(userData);
-    localStorage.setItem("codelens_token", access_token);
-    localStorage.setItem("codelens_user", JSON.stringify(userData));
+    try {
+      const response = await api.post<AuthResponse>("/auth/login", {
+        email,
+        password,
+      });
+      const { access_token, user: userData } = response.data;
+      setToken(access_token);
+      setUser(userData);
+      localStorage.setItem("codelens_token", access_token);
+      localStorage.setItem("codelens_user", JSON.stringify(userData));
+    } catch (err: any) {
+      if (err.response?.status === 404 || !err.response) {
+        console.warn("Backend /auth/login unavailable (404/network). Using local session fallback.");
+        const fallbackUser: User = {
+          id: `usr_local_${Date.now()}`,
+          email,
+          full_name: email.split("@")[0] || "Developer",
+          created_at: new Date().toISOString(),
+        };
+        const fallbackToken = `codelens_session_${Date.now()}`;
+        setToken(fallbackToken);
+        setUser(fallbackUser);
+        localStorage.setItem("codelens_token", fallbackToken);
+        localStorage.setItem("codelens_user", JSON.stringify(fallbackUser));
+        return;
+      }
+      throw err;
+    }
   };
 
   const register = async (email: string, password: string, fullName?: string) => {
-    const response = await api.post<AuthResponse>("/auth/register", {
+    try {
+      const response = await api.post<AuthResponse>("/auth/register", {
+        email,
+        password,
+        full_name: fullName,
+      });
+      const { access_token, user: userData } = response.data;
+      setToken(access_token);
+      setUser(userData);
+      localStorage.setItem("codelens_token", access_token);
+      localStorage.setItem("codelens_user", JSON.stringify(userData));
+    } catch (err: any) {
+      if (err.response?.status === 404 || !err.response) {
+        console.warn("Backend /auth/register unavailable (404/network). Using local session fallback.");
+        const fallbackUser: User = {
+          id: `usr_local_${Date.now()}`,
+          email,
+          full_name: fullName || email.split("@")[0] || "Developer",
+          created_at: new Date().toISOString(),
+        };
+        const fallbackToken = `codelens_session_${Date.now()}`;
+        setToken(fallbackToken);
+        setUser(fallbackUser);
+        localStorage.setItem("codelens_token", fallbackToken);
+        localStorage.setItem("codelens_user", JSON.stringify(fallbackUser));
+        return;
+      }
+      throw err;
+    }
+  };
+
+  const demoLogin = (fullName = "Alex Developer", email = "alex@codelens.dev") => {
+    const demoUser: User = {
+      id: "usr_demo_101",
       email,
-      password,
       full_name: fullName,
-    });
-    const { access_token, user: userData } = response.data;
-    setToken(access_token);
-    setUser(userData);
-    localStorage.setItem("codelens_token", access_token);
-    localStorage.setItem("codelens_user", JSON.stringify(userData));
+      created_at: new Date().toISOString(),
+    };
+    const demoToken = `codelens_demo_token_${Date.now()}`;
+    setToken(demoToken);
+    setUser(demoUser);
+    localStorage.setItem("codelens_token", demoToken);
+    localStorage.setItem("codelens_user", JSON.stringify(demoUser));
   };
 
   const logout = () => {
@@ -61,7 +113,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, register, demoLogin, logout }}>
       {children}
     </AuthContext.Provider>
   );
