@@ -103,13 +103,13 @@ const ASTTreeNode: React.FC<{
             ? "bg-emerald-950/10 border-emerald-500/30 hover:bg-emerald-950/20"
             : "bg-[#111113] border-[#27272A] hover:bg-[#18181B]"
         }`}
-        style={{ marginLeft: `${Math.max(depth * 14, 0)}px` }}
+        style={{ marginLeft: `${Math.min(Math.max(depth * 10, 0), 36)}px` }}
         onClick={() => hasChildren && setIsOpen(!isOpen)}
       >
-        <div className="flex items-center gap-2 truncate">
+        <div className="flex items-center gap-2 min-w-0">
           {/* Expand / Collapse Icon */}
           {hasChildren ? (
-            <button className="text-[#71717A] hover:text-[#F4F4F5]">
+            <button className="text-[#71717A] hover:text-[#F4F4F5] shrink-0">
               {isOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
             </button>
           ) : (
@@ -117,12 +117,12 @@ const ASTTreeNode: React.FC<{
           )}
 
           {/* Node Type Pill */}
-          <span className={`text-[10px] font-bold uppercase px-1.5 py-0.2 rounded border ${getNodeBadgeColor(node.type)}`}>
+          <span className={`text-[10px] font-bold uppercase px-1.5 py-0.2 rounded border shrink-0 ${getNodeBadgeColor(node.type)}`}>
             {node.type}
           </span>
 
           {/* Node Expression */}
-          <span className="text-xs font-mono font-medium text-[#F4F4F5] truncate max-w-xs sm:max-w-sm">
+          <span className="text-xs font-mono font-medium text-[#F4F4F5] truncate max-w-[180px] sm:max-w-sm">
             {node.name}
           </span>
         </div>
@@ -302,64 +302,64 @@ export const ASTVisualizerTree: React.FC<ASTVisualizerTreeProps> = ({
       {/* 2. DUAL-PANE SYNCHRONIZED STUDIO WORKBENCH */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
         {/* LEFT PANE: MAIN VISUALIZATION CANVAS (7 Cols) */}
-        <div className="lg:col-span-7 bg-[#111113] rounded-xl border border-[#27272A] overflow-hidden shadow-sm flex flex-col min-h-[480px]">
+        <div className="lg:col-span-7 bg-[#111113] rounded-xl border border-[#27272A] overflow-hidden shadow-sm flex flex-col min-h-[380px] sm:min-h-[480px]">
           {/* Sub-View Switcher Tabs */}
-          <div className="px-4 py-2.5 bg-[#141416] border-b border-[#27272A] flex flex-wrap items-center justify-between gap-2 font-mono">
-            <div className="flex items-center bg-[#18181B] p-0.5 rounded-lg border border-[#27272A] text-xs">
+          <div className="px-3 sm:px-4 py-2 bg-[#141416] border-b border-[#27272A] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 font-mono">
+            <div className="flex items-center bg-[#18181B] p-0.5 rounded-lg border border-[#27272A] text-xs overflow-x-auto no-scrollbar w-full sm:w-auto">
               <button
                 onClick={() => setActiveTab("algorithm")}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-md font-medium transition-all ${
+                className={`flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-md font-medium whitespace-nowrap transition-all flex-1 sm:flex-none ${
                   activeTab === "algorithm"
                     ? "bg-[#27272A] text-blue-400 shadow-sm"
                     : "text-[#71717A] hover:text-[#A1A1AA]"
                 }`}
               >
-                <Activity className="w-3.5 h-3.5" />
-                <span>Algorithm Studio</span>
+                <Activity className="w-3.5 h-3.5 shrink-0" />
+                <span>Studio</span>
               </button>
 
               <button
                 onClick={() => setActiveTab("cfg")}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-md font-medium transition-all ${
+                className={`flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-md font-medium whitespace-nowrap transition-all flex-1 sm:flex-none ${
                   activeTab === "cfg"
                     ? "bg-[#27272A] text-blue-400 shadow-sm"
                     : "text-[#71717A] hover:text-[#A1A1AA]"
                 }`}
               >
-                <GitGraph className="w-3.5 h-3.5" />
-                <span>CFG Graph</span>
+                <GitGraph className="w-3.5 h-3.5 shrink-0" />
+                <span>CFG</span>
               </button>
 
               <button
                 onClick={() => setActiveTab("tree")}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-md font-medium transition-all ${
+                className={`flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-md font-medium whitespace-nowrap transition-all flex-1 sm:flex-none ${
                   activeTab === "tree"
                     ? "bg-[#27272A] text-blue-400 shadow-sm"
                     : "text-[#71717A] hover:text-[#A1A1AA]"
                 }`}
               >
-                <FolderTree className="w-3.5 h-3.5" />
-                <span>AST Tree</span>
+                <FolderTree className="w-3.5 h-3.5 shrink-0" />
+                <span>AST</span>
               </button>
             </div>
 
             {/* AST Tree Search Filter */}
             {activeTab === "tree" && (
-              <div className="relative">
+              <div className="relative w-full sm:w-auto">
                 <Search className="w-3.5 h-3.5 text-[#71717A] absolute left-2.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Filter nodes..."
-                  className="pl-8 pr-2.5 py-0.5 rounded bg-[#18181B] border border-[#27272A] text-xs text-[#F4F4F5] placeholder-[#71717A] focus:outline-none focus:border-blue-500/50 w-32 sm:w-40 font-mono"
+                  className="w-full sm:w-36 pl-8 pr-2.5 py-1 rounded bg-[#18181B] border border-[#27272A] text-xs text-[#F4F4F5] placeholder-[#71717A] focus:outline-none focus:border-blue-500/50 font-mono"
                 />
               </div>
             )}
           </div>
 
           {/* Canvas Content */}
-          <div className="flex-1 p-4 sm:p-6 bg-[#09090B] bg-[radial-gradient(#1f1f23_1px,transparent_1px)] [background-size:16px_16px] flex flex-col justify-center">
+          <div className="flex-1 p-3 sm:p-6 bg-[#09090B] bg-[radial-gradient(#1f1f23_1px,transparent_1px)] [background-size:16px_16px] flex flex-col justify-center overflow-hidden">
             {activeTab === "algorithm" && (
               <AlgorithmVisualizerCanvas step={activeStep} />
             )}

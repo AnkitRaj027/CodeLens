@@ -85,6 +85,15 @@ export default function AlgorithmsPage() {
     ? algorithms
     : algorithms.filter((a) => a.category === selectedCategory);
 
+  const handleSelectAlgo = (algo: AlgorithmProfile) => {
+    setSelectedAlgo(algo);
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      setTimeout(() => {
+        document.getElementById("algorithm-detail")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 50);
+    }
+  };
+
   return (
     <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       {/* Header Banner */}
@@ -109,12 +118,12 @@ export default function AlgorithmsPage() {
       </div>
 
       {/* Category Tabs */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-2 border-b border-[#27272A] font-mono text-xs">
+      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-2 border-b border-[#27272A] font-mono text-xs">
         {categories.map((cat) => (
           <button
             key={cat}
             onClick={() => setSelectedCategory(cat)}
-            className={`px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-all capitalize ${
+            className={`px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-all capitalize shrink-0 ${
               selectedCategory === cat
                 ? "bg-[#18181B] text-[#F4F4F5] border border-[#27272A]"
                 : "text-[#71717A] hover:text-[#F4F4F5] hover:bg-[#111113]"
@@ -141,11 +150,11 @@ export default function AlgorithmsPage() {
                 return (
                   <div
                     key={algo.id}
-                    onClick={() => setSelectedAlgo(algo)}
+                    onClick={() => handleSelectAlgo(algo)}
                     className={`p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer transition-all ${
                       isSelected
                         ? "bg-[#18181B] border-l-2 border-blue-500"
-                        : "hover:bg-[#18181B]/50"
+                        : "hover:bg-[#18181B]/50 active:bg-[#1c1c20]"
                     }`}
                   >
                     <div>
@@ -212,8 +221,8 @@ export default function AlgorithmsPage() {
 
         {/* Right Column: Selected Algorithm Deep-Dive Pane */}
         {selectedAlgo && (
-          <div className="lg:col-span-5 space-y-4">
-            <div className="bg-[#111113] rounded-lg border border-[#27272A] p-5 space-y-4 shadow-sm sticky top-20">
+          <div id="algorithm-detail" className="lg:col-span-5 space-y-4">
+            <div className="bg-[#111113] rounded-lg border border-[#27272A] p-5 space-y-4 shadow-sm lg:sticky lg:top-20">
               <div className="space-y-1 border-b border-[#27272A] pb-3 font-mono">
                 <span className="text-[10px] uppercase font-semibold text-blue-400 tracking-wider">
                   Algorithm Breakdown

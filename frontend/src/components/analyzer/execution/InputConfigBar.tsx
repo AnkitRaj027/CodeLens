@@ -105,39 +105,42 @@ export const InputConfigBar: React.FC<InputConfigBarProps> = ({
       </div>
 
       {/* Input Fields Row */}
-      <div className="flex flex-wrap items-center gap-3 pt-1">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 pt-1">
         {/* Array Input */}
-        <div className="flex-1 min-w-[220px] flex items-center gap-2 bg-[#18181B] border border-[#27272A] rounded-lg px-2.5 py-1.5 focus-within:border-blue-500/50">
-          <span className="text-[11px] text-[#71717A] font-bold">Array:</span>
+        <div className="flex-1 flex items-center gap-2 bg-[#18181B] border border-[#27272A] rounded-lg px-2.5 py-1.5 focus-within:border-blue-500/50">
+          <span className="text-[11px] text-[#71717A] font-bold shrink-0">Array:</span>
           <input
             type="text"
             value={arrayStr}
             onChange={(e) => setArrayStr(e.target.value)}
             placeholder="e.g. 5, 1, 4, 2, 8"
-            className="flex-1 bg-transparent text-xs text-[#F4F4F5] placeholder-[#71717A] focus:outline-none font-mono"
+            className="w-full bg-transparent text-xs text-[#F4F4F5] placeholder-[#71717A] focus:outline-none font-mono"
           />
         </div>
 
-        {/* Target Input */}
-        <div className="w-28 flex items-center gap-1.5 bg-[#18181B] border border-[#27272A] rounded-lg px-2.5 py-1.5 focus-within:border-blue-500/50">
-          <span className="text-[11px] text-[#71717A] font-bold">Target:</span>
-          <input
-            type="text"
-            value={targetVal}
-            onChange={(e) => setTargetVal(e.target.value)}
-            placeholder="23"
-            className="w-10 bg-transparent text-xs text-[#F4F4F5] focus:outline-none font-mono"
-          />
-        </div>
+        {/* Target Input & Apply Button Group */}
+        <div className="flex items-center gap-2">
+          {/* Target Input */}
+          <div className="w-28 sm:w-28 flex items-center gap-1.5 bg-[#18181B] border border-[#27272A] rounded-lg px-2.5 py-1.5 focus-within:border-blue-500/50">
+            <span className="text-[11px] text-[#71717A] font-bold shrink-0">Target:</span>
+            <input
+              type="text"
+              value={targetVal}
+              onChange={(e) => setTargetVal(e.target.value)}
+              placeholder="23"
+              className="w-full bg-transparent text-xs text-[#F4F4F5] focus:outline-none font-mono"
+            />
+          </div>
 
-        {/* Apply & Re-run Button */}
-        <button
-          onClick={parseAndApply}
-          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md transition-all shrink-0"
-        >
-          <RefreshCw className="w-3 h-3" />
-          <span>Apply & Simulate</span>
-        </button>
+          {/* Apply & Re-run Button */}
+          <button
+            onClick={parseAndApply}
+            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-2 sm:py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold text-xs shadow-md transition-all shrink-0"
+          >
+            <RefreshCw className="w-3 h-3 shrink-0" />
+            <span>Apply & Simulate</span>
+          </button>
+        </div>
       </div>
     </div>
   );

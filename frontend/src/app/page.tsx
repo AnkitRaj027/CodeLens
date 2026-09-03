@@ -39,9 +39,9 @@ export default function LandingPage() {
             </div>
 
             {/* Main Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-[#F4F4F5] leading-[1.1]">
-              Analyze. Understand.. <br />
-              <span className="text-[#F4F4F5]  decoration-blue-500/50 decoration-2 underline-offset-8">
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-[#F4F4F5] leading-[1.15] sm:leading-[1.1]">
+              Analyze. Understand. <br />
+              <span className="text-[#F4F4F5] decoration-blue-500/50 decoration-2 underline-offset-8">
                 Optimize
               </span>
             </h1>

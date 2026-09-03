@@ -188,14 +188,14 @@ export const AITutorPanel: React.FC<AITutorPanelProps> = ({ code, language, resu
       {activeSubTab === "proof" && (
         <div className="space-y-5">
           {/* Mode Selector Tabs */}
-          <div className="flex items-center justify-between gap-2 overflow-x-auto pb-1">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <span className="text-[11px] font-mono text-[#71717A] uppercase tracking-wider">Explanation Persona:</span>
-            <div className="flex items-center gap-1 bg-[#18181B] p-1 rounded-md border border-[#27272A] text-xs font-mono">
+            <div className="flex items-center gap-1 bg-[#18181B] p-1 rounded-md border border-[#27272A] text-xs font-mono overflow-x-auto no-scrollbar w-full sm:w-auto">
               {[
                 { id: "beginner", label: "Beginner", icon: BookOpen },
                 { id: "intermediate", label: "University", icon: GraduationCap },
                 { id: "advanced", label: "Senior", icon: Brain },
-                { id: "dsa_student", label: "DSA Interview", icon: Sparkles },
+                { id: "dsa_student", label: "Interview", icon: Sparkles },
               ].map((tab) => {
                 const Icon = tab.icon;
                 const isActive = mode === tab.id;
@@ -203,14 +203,14 @@ export const AITutorPanel: React.FC<AITutorPanelProps> = ({ code, language, resu
                   <button
                     key={tab.id}
                     onClick={() => setMode(tab.id)}
-                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium transition-all ${
+                    className={`flex items-center justify-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium whitespace-nowrap transition-all flex-1 sm:flex-none ${
                       isActive
                         ? "bg-[#27272A] text-[#F4F4F5] shadow-sm"
                         : "text-[#71717A] hover:text-[#A1A1AA]"
                     }`}
                   >
-                    <Icon className="w-3 h-3" />
-                    <span className="hidden sm:inline">{tab.label}</span>
+                    <Icon className="w-3 h-3 shrink-0" />
+                    <span>{tab.label}</span>
                   </button>
                 );
               })}

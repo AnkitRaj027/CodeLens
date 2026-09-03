@@ -121,20 +121,20 @@ export default function AnalyzerPage() {
   return (
     <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Top Telemetry Strip */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-[#111113] border border-[#27272A] p-3 rounded-lg text-xs font-mono text-[#A1A1AA]">
-        <div className="flex items-center gap-3 flex-wrap">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-[#111113] border border-[#27272A] p-3 rounded-lg text-xs font-mono text-[#A1A1AA]">
+        <div className="flex items-center gap-2.5 flex-wrap">
           <div className="flex items-center gap-1.5 text-[#F4F4F5] font-medium">
             <Terminal className="w-3.5 h-3.5 text-blue-400" />
             <span>AST Workspace</span>
           </div>
-          <span className="text-[#27272A]">|</span>
+          <span className="text-[#27272A] hidden sm:inline">|</span>
           <div className="flex items-center gap-1.5 text-[#71717A]">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
             <span>Deterministic Engine</span>
           </div>
           {lastParseDuration > 0 && (
             <>
-              <span className="text-[#27272A]">|</span>
+              <span className="text-[#27272A] hidden sm:inline">|</span>
               <div className="text-[#71717A]">
                 Latency: <span className="text-[#F4F4F5]">{lastParseDuration}ms</span>
               </div>
@@ -143,10 +143,10 @@ export default function AnalyzerPage() {
         </div>
 
         {result && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-end sm:justify-start">
             <button
               onClick={handleSave}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium border transition-all ${
+              className={`w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border transition-all ${
                 savedSuccess
                   ? "bg-[#18181B] text-emerald-400 border-emerald-500/30"
                   : "bg-[#18181B] hover:bg-[#202024] text-[#F4F4F5] border-[#27272A]"
@@ -193,11 +193,11 @@ export default function AnalyzerPage() {
           {/* Complexity Cards */}
           <ComplexityCard result={result} />
 
-          {/* Tab Navigation */}
-          <div className="flex flex-wrap items-center gap-1.5 border-b border-[#27272A] pb-2 font-mono text-xs">
+          {/* Tab Navigation with horizontal scroll on mobile */}
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar border-b border-[#27272A] pb-2 font-mono text-xs -mx-4 px-4 sm:mx-0 sm:px-0">
             <button
               onClick={() => setActiveTab("findings")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-medium transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-medium whitespace-nowrap transition-all shrink-0 ${
                 activeTab === "findings"
                   ? "bg-[#18181B] text-[#F4F4F5] border border-[#27272A]"
                   : "text-[#71717A] hover:text-[#F4F4F5]"
@@ -209,7 +209,7 @@ export default function AnalyzerPage() {
 
             <button
               onClick={() => setActiveTab("ast")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-medium transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-medium whitespace-nowrap transition-all shrink-0 ${
                 activeTab === "ast"
                   ? "bg-[#18181B] text-[#F4F4F5] border border-[#27272A]"
                   : "text-[#71717A] hover:text-[#F4F4F5]"
@@ -221,7 +221,7 @@ export default function AnalyzerPage() {
 
             <button
               onClick={() => setActiveTab("ai")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-medium transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-medium whitespace-nowrap transition-all shrink-0 ${
                 activeTab === "ai"
                   ? "bg-[#18181B] text-[#F4F4F5] border border-[#27272A]"
                   : "text-[#71717A] hover:text-[#F4F4F5]"
@@ -233,7 +233,7 @@ export default function AnalyzerPage() {
 
             <button
               onClick={() => setActiveTab("diff")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-medium transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-medium whitespace-nowrap transition-all shrink-0 ${
                 activeTab === "diff"
                   ? "bg-[#18181B] text-[#F4F4F5] border border-[#27272A]"
                   : "text-[#71717A] hover:text-[#F4F4F5]"

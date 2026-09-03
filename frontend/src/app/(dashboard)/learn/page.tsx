@@ -83,12 +83,12 @@ export default function LearnPage() {
       </div>
 
       {/* Category Tabs */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-2 border-b border-[#27272A] font-mono text-xs">
+      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-2 border-b border-[#27272A] font-mono text-xs">
         {categories.map((cat) => (
           <button
             key={cat}
             onClick={() => setSelectedCategory(cat)}
-            className={`px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-all capitalize ${
+            className={`px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-all capitalize shrink-0 ${
               selectedCategory === cat
                 ? "bg-[#18181B] text-[#F4F4F5] border border-[#27272A]"
                 : "text-[#71717A] hover:text-[#F4F4F5] hover:bg-[#111113]"

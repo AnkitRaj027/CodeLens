@@ -214,7 +214,7 @@ export default function PracticePage() {
   return (
     <div className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       {/* Top Banner with Score & Streak */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#27272A] pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#27272A] pb-4">
         <div>
           <div className="flex items-center gap-2 text-[10px] font-mono font-semibold text-blue-400 uppercase tracking-wider mb-1">
             <CheckCircle2 className="w-3.5 h-3.5" />
@@ -226,13 +226,13 @@ export default function PracticePage() {
         </div>
 
         {/* Score & Streak Stats */}
-        <div className="flex items-center gap-2 font-mono text-xs">
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-md bg-[#111113] border border-[#27272A] text-[#F4F4F5]">
+        <div className="flex items-center justify-between sm:justify-start gap-2 font-mono text-xs">
+          <div className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md bg-[#111113] border border-[#27272A] text-[#F4F4F5]">
             <Trophy className="w-3.5 h-3.5 text-amber-400" />
             <span>Score: <strong className="text-blue-400">{score}</strong></span>
           </div>
 
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-md bg-[#111113] border border-[#27272A] text-[#F4F4F5]">
+          <div className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md bg-[#111113] border border-[#27272A] text-[#F4F4F5]">
             <Flame className="w-3.5 h-3.5 text-orange-400" />
             <span>Streak: <strong className="text-orange-400">{streak}</strong></span>
           </div>
@@ -240,15 +240,15 @@ export default function PracticePage() {
       </div>
 
       {/* Control Strip: Language, Difficulty, Generate Button */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-lg bg-[#111113] border border-[#27272A] font-mono text-xs">
-        <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-lg bg-[#111113] border border-[#27272A] font-mono text-xs">
+        <div className="flex items-center gap-2">
           {/* Language Selector */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#18181B] border border-[#27272A] text-xs font-mono text-[#A1A1AA]">
-            <FileCode className="w-3.5 h-3.5 text-blue-400" />
+          <div className="flex-1 sm:flex-none flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#18181B] border border-[#27272A] text-xs font-mono text-[#A1A1AA]">
+            <FileCode className="w-3.5 h-3.5 text-blue-400 shrink-0" />
             <select
               value={selectedLanguage}
               onChange={(e) => handleLanguageChange(e.target.value)}
-              className="bg-transparent text-[#F4F4F5] focus:outline-none cursor-pointer text-xs"
+              className="bg-transparent text-[#F4F4F5] focus:outline-none cursor-pointer text-xs w-full"
             >
               <option value="python" className="bg-[#18181B] text-[#F4F4F5]">Python</option>
               <option value="cpp" className="bg-[#18181B] text-[#F4F4F5]">C++</option>
@@ -256,12 +256,12 @@ export default function PracticePage() {
           </div>
 
           {/* Difficulty Selector */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#18181B] border border-[#27272A] text-xs font-mono text-[#A1A1AA]">
-            <span className="text-[#71717A]">Level:</span>
+          <div className="flex-1 sm:flex-none flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#18181B] border border-[#27272A] text-xs font-mono text-[#A1A1AA]">
+            <span className="text-[#71717A] shrink-0">Level:</span>
             <select
               value={selectedDifficulty}
               onChange={(e) => handleDifficultyChange(e.target.value)}
-              className="bg-transparent text-[#F4F4F5] focus:outline-none cursor-pointer text-xs"
+              className="bg-transparent text-[#F4F4F5] focus:outline-none cursor-pointer text-xs w-full"
             >
               <option value="all" className="bg-[#18181B] text-[#F4F4F5]">All Levels</option>
               <option value="Beginner" className="bg-[#18181B] text-[#F4F4F5]">Beginner</option>
@@ -275,7 +275,7 @@ export default function PracticePage() {
         <button
           onClick={() => fetchNewQuestion()}
           disabled={isGenerating}
-          className="flex items-center gap-1.5 px-3 py-1 rounded-md bg-[#18181B] hover:bg-[#202024] border border-[#27272A] text-xs font-mono text-blue-400 hover:text-blue-300 transition-colors disabled:opacity-50"
+          className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md bg-[#18181B] hover:bg-[#202024] active:bg-[#27272A] border border-[#27272A] text-xs font-mono text-blue-400 hover:text-blue-300 transition-colors disabled:opacity-50"
         >
           {isGenerating ? (
             <>
@@ -347,7 +347,7 @@ export default function PracticePage() {
               <label className="block text-[11px] font-mono font-semibold uppercase tracking-wider text-[#71717A]">
                 Select Time Complexity:
               </label>
-              <div className="grid grid-cols-2 sm:grid-cols-6 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
                 {currentQuestion.time_options.map((opt) => {
                   const isSelected = selectedTime === opt;
                   return (
@@ -358,7 +358,7 @@ export default function PracticePage() {
                       className={`p-2.5 rounded-md font-mono text-xs font-bold border transition-all text-center ${
                         isSelected
                           ? "bg-[#F4F4F5] text-[#09090B] border-[#F4F4F5] shadow-sm"
-                          : "bg-[#18181B] text-[#A1A1AA] border-[#27272A] hover:border-[#3F3F46] hover:text-[#F4F4F5]"
+                          : "bg-[#18181B] text-[#A1A1AA] border-[#27272A] hover:border-[#3F3F46] hover:text-[#F4F4F5] active:bg-[#27272A]"
                       }`}
                     >
                       {opt}
@@ -384,7 +384,7 @@ export default function PracticePage() {
                       className={`p-2.5 rounded-md font-mono text-xs font-bold border transition-all text-center ${
                         isSelected
                           ? "bg-blue-600 text-white border-blue-500 shadow-sm"
-                          : "bg-[#18181B] text-[#A1A1AA] border-[#27272A] hover:border-[#3F3F46] hover:text-[#F4F4F5]"
+                          : "bg-[#18181B] text-[#A1A1AA] border-[#27272A] hover:border-[#3F3F46] hover:text-[#F4F4F5] active:bg-[#27272A]"
                       }`}
                     >
                       {opt}
@@ -396,10 +396,10 @@ export default function PracticePage() {
 
             {/* Actions & Submit */}
             {!result ? (
-              <div className="pt-3 border-t border-[#27272A] flex items-center justify-between">
+              <div className="pt-3 border-t border-[#27272A] flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-3">
                 <button
                   onClick={handleTestInIDE}
-                  className="flex items-center gap-1.5 text-xs text-[#71717A] hover:text-[#F4F4F5] transition-colors font-mono"
+                  className="flex items-center justify-center gap-1.5 py-2 text-xs text-[#71717A] hover:text-[#F4F4F5] transition-colors font-mono"
                 >
                   <Play className="w-3.5 h-3.5" />
                   <span>Test in IDE Analyzer</span>
@@ -408,7 +408,7 @@ export default function PracticePage() {
                 <button
                   onClick={handleSubmit}
                   disabled={!selectedTime || !selectedSpace || isSubmitting}
-                  className="flex items-center gap-2 px-5 py-2 rounded-md bg-[#F4F4F5] text-[#09090B] hover:bg-white font-medium text-xs transition-all disabled:opacity-50 font-mono"
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 sm:py-2 rounded-md bg-[#F4F4F5] text-[#09090B] hover:bg-white font-medium text-xs transition-all disabled:opacity-50 font-mono shadow-sm"
                 >
                   {isSubmitting ? (
                     <>
@@ -439,7 +439,7 @@ export default function PracticePage() {
                     ) : (
                       <>
                         <XCircle className="w-4 h-4 text-amber-400" />
-                        <span>Incorrect / Partial (+{result.score_delta} Pts)</span>
+                        <span>Analysis Result: Partially Correct (+{result.score_delta} Pts)</span>
                       </>
                     )}
                   </div>
@@ -458,10 +458,10 @@ export default function PracticePage() {
                   </p>
                 </div>
 
-                <div className="flex items-center justify-between pt-2">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
                   <button
                     onClick={handleTestInIDE}
-                    className="flex items-center gap-1.5 text-xs text-[#71717A] hover:text-[#F4F4F5] transition-colors font-mono"
+                    className="flex items-center justify-center gap-1.5 py-2 text-xs text-[#71717A] hover:text-[#F4F4F5] transition-colors font-mono"
                   >
                     <Play className="w-3.5 h-3.5" />
                     <span>Open in Analyzer IDE</span>
@@ -469,7 +469,7 @@ export default function PracticePage() {
 
                   <button
                     onClick={handleNext}
-                    className="flex items-center gap-2 px-4 py-2 rounded-md bg-[#F4F4F5] text-[#09090B] text-xs font-medium transition-all font-mono hover:bg-white"
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 rounded-md bg-[#F4F4F5] text-[#09090B] text-xs font-medium transition-all font-mono hover:bg-white shadow-sm"
                   >
                     <span>Next Challenge</span>
                     <ArrowRight className="w-3.5 h-3.5" />

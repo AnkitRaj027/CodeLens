@@ -195,6 +195,21 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const editorRef = useRef<any>(null);
   const decorationsRef = useRef<string[]>([]);
+  const [isPresetOpen, setIsPresetOpen] = React.useState<boolean>(false);
+  const presetDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close presets dropdown on outside click
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (presetDropdownRef.current && !presetDropdownRef.current.contains(e.target as Node)) {
+        setIsPresetOpen(false);
+      }
+    };
+    if (isPresetOpen) {
+      document.addEventListener("mousedown", handleOutsideClick);
+    }
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, [isPresetOpen]);
 
   // Update line decorations whenever activeLine changes
   useEffect(() => {
@@ -269,17 +284,18 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
     // Respect the currently selected language
     const presetCode = language === "cpp" ? preset.code_cpp : preset.code_python;
     setCode(presetCode);
+    setIsPresetOpen(false);
   };
 
   return (
     <div className="bg-[#111113] rounded-lg border border-[#27272A] overflow-hidden flex flex-col shadow-sm">
       {/* Editor Toolbar */}
-      <div className="px-4 py-2.5 bg-[#111113] border-b border-[#27272A] flex flex-wrap items-center justify-between gap-3">
+      <div className="px-3 sm:px-4 py-2.5 bg-[#111113] border-b border-[#27272A] flex flex-wrap items-center justify-between gap-2.5">
         {/* Left: Language & Presets */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           {/* Language Selector */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#18181B] border border-[#27272A] text-xs font-mono text-[#A1A1AA]">
-            <FileCode className="w-3.5 h-3.5 text-blue-400" />
+          <div className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-md bg-[#18181B] border border-[#27272A] text-xs font-mono text-[#A1A1AA]">
+            <FileCode className="w-3.5 h-3.5 text-blue-400 shrink-0" />
             <select
               value={language}
               onChange={(e) => handleLanguageChange(e.target.value)}
@@ -291,36 +307,45 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
           </div>
 
           {/* Presets Dropdown */}
-          <div className="relative group">
-            <button className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#18181B] hover:bg-[#202024] border border-[#27272A] text-xs font-mono text-[#A1A1AA] hover:text-[#F4F4F5] transition-colors">
-              <Sparkles className="w-3 h-3 text-amber-400" />
-              <span>Presets ({language === "cpp" ? "C++" : "Python"})</span>
-              <ChevronDown className="w-3 h-3 text-[#71717A]" />
+          <div className="relative" ref={presetDropdownRef}>
+            <button 
+              onClick={() => setIsPresetOpen(!isPresetOpen)}
+              className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-md bg-[#18181B] hover:bg-[#202024] active:bg-[#27272A] border border-[#27272A] text-xs font-mono text-[#A1A1AA] hover:text-[#F4F4F5] transition-colors"
+            >
+              <Sparkles className="w-3 h-3 text-amber-400 shrink-0" />
+              <span className="hidden sm:inline">Presets ({language === "cpp" ? "C++" : "Python"})</span>
+              <span className="sm:hidden">Presets</span>
+              <ChevronDown className={`w-3 h-3 text-[#71717A] transition-transform ${isPresetOpen ? "rotate-180" : ""}`} />
             </button>
-            <div className="absolute left-0 top-full mt-1.5 w-72 rounded-md bg-[#18181B] border border-[#27272A] shadow-2xl p-1.5 hidden group-hover:block z-50">
-              <div className="px-2.5 py-1 text-[10px] uppercase font-mono font-semibold text-[#71717A] tracking-wider flex items-center justify-between">
-                <span>Algorithm Presets</span>
-                <span className="text-blue-400 uppercase">{language}</span>
+
+            {isPresetOpen && (
+              <div className="absolute left-0 top-full mt-1.5 w-72 max-w-[85vw] rounded-lg bg-[#18181B] border border-[#27272A] shadow-2xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
+                <div className="px-2.5 py-1 text-[10px] uppercase font-mono font-semibold text-[#71717A] tracking-wider flex items-center justify-between border-b border-[#27272A]/50 pb-1 mb-1">
+                  <span>Algorithm Presets</span>
+                  <span className="text-blue-400 uppercase">{language}</span>
+                </div>
+                <div className="max-h-60 overflow-y-auto space-y-0.5">
+                  {EXAMPLE_PRESETS.map((p) => (
+                    <button
+                      key={p.id}
+                      onClick={() => handlePresetSelect(p)}
+                      className="w-full text-left px-2.5 py-1.5 rounded-md text-xs text-[#A1A1AA] hover:text-[#F4F4F5] hover:bg-[#27272A] active:bg-[#323238] transition-all flex flex-col font-mono group/btn"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-[11px] group-hover/btn:text-blue-400">{p.name}</span>
+                        <span className="text-[10px] text-blue-400/80">{p.complexity}</span>
+                      </div>
+                      <span className="text-[10px] text-[#71717A]">{p.category}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
-              {EXAMPLE_PRESETS.map((p) => (
-                <button
-                  key={p.id}
-                  onClick={() => handlePresetSelect(p)}
-                  className="w-full text-left px-2.5 py-1.5 rounded text-xs text-[#A1A1AA] hover:text-[#F4F4F5] hover:bg-[#27272A] transition-all flex flex-col font-mono group/btn"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium text-[11px] group-hover/btn:text-blue-400">{p.name}</span>
-                    <span className="text-[10px] text-blue-400/80">{p.complexity}</span>
-                  </div>
-                  <span className="text-[10px] text-[#71717A]">{p.category}</span>
-                </button>
-              ))}
-            </div>
+            )}
           </div>
         </div>
 
         {/* Right: Actions & Run Shortcut */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           {/* File Upload */}
           <input
             type="file"
@@ -351,18 +376,19 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
           <button
             onClick={onAnalyze}
             disabled={isAnalyzing || !code.trim()}
-            className="flex items-center gap-2 px-3.5 py-1.5 rounded-md bg-[#F4F4F5] text-[#09090B] hover:bg-white font-medium text-xs shadow-sm transition-all disabled:opacity-50 font-mono"
+            className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1.5 rounded-md bg-[#F4F4F5] text-[#09090B] hover:bg-white font-medium text-xs shadow-sm transition-all disabled:opacity-50 font-mono"
           >
             {isAnalyzing ? (
               <>
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                <span>Parsing AST...</span>
+                <span className="hidden sm:inline">Parsing AST...</span>
+                <span className="sm:hidden">Analyzing...</span>
               </>
             ) : (
               <>
                 <Play className="w-3 h-3 fill-current" />
                 <span>Analyze</span>
-                <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1 py-0.2 text-[9px] font-mono text-[#71717A] bg-[#E4E4E7] rounded">
+                <kbd className="hidden md:inline-flex items-center gap-0.5 px-1 py-0.2 text-[9px] font-mono text-[#71717A] bg-[#E4E4E7] rounded">
                   Ctrl ↵
                 </kbd>
               </>
@@ -372,7 +398,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
       </div>
 
       {/* Monaco Code Editor Canvas */}
-      <div className="h-[430px] w-full bg-[#09090B]">
+      <div className="h-[320px] sm:h-[400px] lg:h-[440px] w-full bg-[#09090B]">
         <Editor
           height="100%"
           language={language === "cpp" ? "cpp" : "python"}

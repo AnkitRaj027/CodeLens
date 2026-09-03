@@ -57,26 +57,33 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-start justify-center pt-24 px-4">
-      <div className="w-full max-w-xl bg-[#111113] border border-[#27272A] rounded-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+    <div 
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-start justify-center pt-12 sm:pt-24 px-3 sm:px-4 animate-in fade-in duration-150"
+    >
+      <div className="w-full max-w-xl bg-[#111113] border border-[#27272A] rounded-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150">
         {/* Search Input */}
-        <div className="px-4 py-3.5 border-b border-[#27272A] flex items-center gap-3">
-          <Search className="w-4 h-4 text-[#71717A]" />
+        <div className="px-3.5 sm:px-4 py-3 border-b border-[#27272A] flex items-center gap-2.5">
+          <Search className="w-4 h-4 text-[#71717A] shrink-0" />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             autoFocus
-            placeholder="Type a command or search algorithms..."
+            placeholder="Search algorithms, lessons, IDE..."
             className="flex-1 bg-transparent text-xs text-[#F4F4F5] placeholder-[#71717A] focus:outline-none font-mono"
           />
-          <kbd className="px-1.5 py-0.5 text-[10px] font-mono text-[#71717A] bg-[#18181B] border border-[#27272A] rounded">
+          <button
+            onClick={onClose}
+            aria-label="Close search"
+            className="text-[10px] font-mono text-[#71717A] hover:text-[#F4F4F5] bg-[#18181B] hover:bg-[#27272A] px-2 py-1 rounded border border-[#27272A] transition-colors"
+          >
             ESC
-          </kbd>
+          </button>
         </div>
 
         {/* Results List */}
-        <div className="max-h-[340px] overflow-y-auto p-2 divide-y divide-[#18181B]">
+        <div className="max-h-[60vh] sm:max-h-[360px] overflow-y-auto p-1.5 sm:p-2 divide-y divide-[#18181B]">
           {filtered.length > 0 ? (
             filtered.map((item, idx) => {
               const Icon = item.icon;
@@ -84,18 +91,18 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                 <button
                   key={idx}
                   onClick={() => handleSelect(item.href)}
-                  className="w-full text-left px-3 py-2.5 rounded-md hover:bg-[#18181B] flex items-center justify-between group transition-colors"
+                  className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-[#18181B] active:bg-[#202024] flex items-center justify-between group transition-colors"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="p-1.5 rounded-md bg-[#18181B] border border-[#27272A] text-[#71717A] group-hover:text-blue-400 group-hover:border-blue-500/30 transition-colors">
+                  <div className="flex items-center gap-3 min-w-0 pr-2">
+                    <div className="p-1.5 rounded-md bg-[#18181B] border border-[#27272A] text-[#71717A] group-hover:text-blue-400 group-hover:border-blue-500/30 transition-colors shrink-0">
                       <Icon className="w-4 h-4" />
                     </div>
-                    <div>
-                      <div className="text-xs font-medium text-[#F4F4F5]">{item.name}</div>
+                    <div className="min-w-0">
+                      <div className="text-xs font-medium text-[#F4F4F5] truncate">{item.name}</div>
                       <div className="text-[10px] text-[#71717A] font-mono">{item.category}</div>
                     </div>
                   </div>
-                  <ArrowRight className="w-3.5 h-3.5 text-[#71717A] group-hover:text-[#F4F4F5] group-hover:translate-x-0.5 transition-all" />
+                  <ArrowRight className="w-3.5 h-3.5 text-[#71717A] group-hover:text-[#F4F4F5] group-hover:translate-x-0.5 transition-all shrink-0" />
                 </button>
               );
             })

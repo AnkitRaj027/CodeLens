@@ -112,11 +112,11 @@ export default function HistoryPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 font-mono text-xs">
+        <div className="flex items-center gap-2 font-mono text-xs w-full sm:w-auto">
           <select
             value={selectedLang}
             onChange={(e) => setSelectedLang(e.target.value)}
-            className="px-2.5 py-1.5 rounded-md bg-[#18181B] border border-[#27272A] text-xs text-[#A1A1AA] focus:outline-none cursor-pointer"
+            className="flex-1 sm:flex-none px-2.5 py-1.5 rounded-md bg-[#18181B] border border-[#27272A] text-xs text-[#A1A1AA] focus:outline-none cursor-pointer"
           >
             <option value="all">All Languages</option>
             <option value="python">Python</option>
@@ -126,7 +126,7 @@ export default function HistoryPage() {
           <select
             value={selectedComplexity}
             onChange={(e) => setSelectedComplexity(e.target.value)}
-            className="px-2.5 py-1.5 rounded-md bg-[#18181B] border border-[#27272A] text-xs text-[#A1A1AA] focus:outline-none cursor-pointer"
+            className="flex-1 sm:flex-none px-2.5 py-1.5 rounded-md bg-[#18181B] border border-[#27272A] text-xs text-[#A1A1AA] focus:outline-none cursor-pointer"
           >
             <option value="all">All Complexities</option>
             <option value="O(1)">O(1)</option>
