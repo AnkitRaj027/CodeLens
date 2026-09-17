@@ -49,3 +49,33 @@ async def test_submit_quiz_answer_incorrect(client: AsyncClient):
     assert data["is_time_correct"] is False
     assert data["is_fully_correct"] is False
     assert data["score_delta"] == 0
+
+
+@pytest.mark.asyncio
+async def test_infinite_procedural_generation_variety(client: AsyncClient):
+    seen_ids = []
+    for _ in range(10):
+        res = await client.post("/api/v1/quiz/generate", json={
+            "language": "python",
+            "exclude_ids": seen_ids
+        })
+        assert res.status_code == 200
+        data = res.json()
+        assert data["id"] not in seen_ids
+        seen_ids.append(data["id"])
+        assert data["correct_time"] in data["time_options"]
+        assert data["correct_space"] in data["space_options"]
+        assert len(data["code_snippet"]) > 10
+
+
+@pytest.mark.asyncio
+async def test_procedural_generation_cpp_language(client: AsyncClient):
+    res = await client.post("/api/v1/quiz/generate", json={
+        "language": "cpp"
+    })
+    assert res.status_code == 200
+    data = res.json()
+    assert data["language"] == "cpp"
+    assert data["correct_time"] in data["time_options"]
+    assert data["correct_space"] in data["space_options"]
+

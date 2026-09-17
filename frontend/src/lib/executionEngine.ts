@@ -11,6 +11,93 @@ import {
 } from "@/types/execution";
 
 // ==============================================================================
+// 0. AUTOMATIC INPUT DETECTION HELPER
+// ==============================================================================
+export function detectInputModeFromCode(code: string): "array" | "number" | "string" | "matrix" {
+  if (!code) return "array";
+  const codeLower = code.toLowerCase();
+
+  // 1. Matrix / 2D Grid / Spatial Algorithms
+  if (
+    codeLower.includes("matrix") ||
+    codeLower.includes("grid") ||
+    codeLower.includes("board") ||
+    codeLower.includes("chessboard") ||
+    codeLower.includes("maze") ||
+    codeLower.includes("vector<vector<") ||
+    codeLower.includes("vector< vector<") ||
+    codeLower.includes("matrix[") ||
+    codeLower.includes("grid[") ||
+    codeLower.includes("board[") ||
+    codeLower.includes("mat[") ||
+    codeLower.includes("[i][j]") ||
+    codeLower.includes("[r][c]") ||
+    codeLower.includes("[row][col]") ||
+    codeLower.includes("[y][x]") ||
+    codeLower.includes("[x][y]") ||
+    codeLower.includes("spiral") ||
+    (codeLower.includes("rotate") && (codeLower.includes("matrix") || codeLower.includes("image") || codeLower.includes("grid"))) ||
+    codeLower.includes("transpose") ||
+    codeLower.includes("flood_fill") ||
+    codeLower.includes("floodfill") ||
+    codeLower.includes("island") ||
+    codeLower.includes("islands") ||
+    codeLower.includes("queens") ||
+    codeLower.includes("sudoku") ||
+    (codeLower.includes("row") && codeLower.includes("col")) ||
+    (codeLower.includes("rows") && codeLower.includes("cols")) ||
+    codeLower.includes("len(grid)") ||
+    codeLower.includes("len(matrix)")
+  ) {
+    return "matrix";
+  }
+
+  // 2. String & Character Stream Algorithms
+  if (
+    codeLower.includes("palindrome") ||
+    codeLower.includes("reverse_string") ||
+    codeLower.includes("anagram") ||
+    codeLower.includes("substring") ||
+    codeLower.includes("subsequence") ||
+    codeLower.includes("needle") ||
+    codeLower.includes("haystack") ||
+    codeLower.includes("valid_parentheses") ||
+    codeLower.includes("word_break") ||
+    codeLower.includes("edit_distance") ||
+    (codeLower.includes("char") && !codeLower.includes("arr")) ||
+    (codeLower.includes("str") && !codeLower.includes("arr") && !codeLower.includes("nums"))
+  ) {
+    return "string";
+  }
+
+  // 3. Scalar Mathematical Loops & Number Theory
+  if (
+    codeLower.includes("prime") ||
+    codeLower.includes("is_prime") ||
+    codeLower.includes("sieve") ||
+    codeLower.includes("gcd") ||
+    codeLower.includes("lcm") ||
+    codeLower.includes("collatz") ||
+    codeLower.includes("fibonacci") ||
+    codeLower.includes("factorial") ||
+    codeLower.includes("count_halves") ||
+    codeLower.includes("divideuntilone") ||
+    codeLower.includes("* i <=") ||
+    codeLower.includes("* val <=") ||
+    codeLower.includes("//= 2") ||
+    codeLower.includes("/= 2") ||
+    codeLower.includes("//= 3") ||
+    (codeLower.includes("while ") && !codeLower.includes("arr") && !codeLower.includes("items") && !codeLower.includes("nums")) ||
+    (!codeLower.includes("arr") && !codeLower.includes("nums") && !codeLower.includes("items") && !codeLower.includes("matrix") && !codeLower.includes("vector") && !codeLower.includes("["))
+  ) {
+    return "number";
+  }
+
+  // 4. Default 1D Array
+  return "array";
+}
+
+// ==============================================================================
 // 1. CONTROL FLOW GRAPH (CFG) BUILDER
 // ==============================================================================
 export function buildControlFlowGraph(ast: ASTNodeVisual, codeLines: string[]): CFGGraph {
@@ -713,12 +800,459 @@ export function generateExecutionSteps(
     simFib(targetN, 1);
 
   // ----------------------------------------------------------------------------
-  // GENERAL / NESTED / LINEAR LOOPS WITH USER INPUT
+  // ALGORITHM: STRING / TWO POINTERS (Palindrome, Reverse, Substring)
+  // ----------------------------------------------------------------------------
+  } else if (
+    codeLower.includes("palindrome") || 
+    codeLower.includes("reverse_string") || 
+    codeLower.includes("anagram") || 
+    (codeLower.includes("char") && !codeLower.includes("arr")) ||
+    (codeLower.includes("str") && !codeLower.includes("arr") && !codeLower.includes("nums"))
+  ) {
+    const text = userInput?.text || (codeLower.includes("palindrome") ? "racecar" : "codelens");
+    const len = text.length;
+    let left = 0;
+    let right = len - 1;
+    let isMatch = true;
+
+    const fnLine = Math.max(1, lines.findIndex(l => l.includes("def ") || l.includes("(")) + 1);
+    const loopLine = Math.max(fnLine + 1, lines.findIndex(l => l.includes("while") || l.includes("for")) + 1);
+    const condLine = Math.max(loopLine, lines.findIndex(l => l.includes("if ") || l.includes("==")) + 1);
+    const retLine = Math.max(condLine + 1, lines.findIndex(l => l.includes("return")) + 1);
+
+    const stringStack: StackFrame[] = [{
+      id: "f_str",
+      functionName: `string_inspect("${text}")`,
+      args: { s: text },
+      variables: { s: text, left: 0, right: len - 1 }
+    }];
+
+    pushStep({
+      line: fnLine,
+      sourceCode: lines[fnLine - 1] || `def is_palindrome(s):`,
+      eventType: "call",
+      callStack: stringStack,
+      variables: { s: text, left: 0, right: len - 1 },
+      algorithmState: {
+        type: "string_state",
+        stringData: {
+          text,
+          pointers: [
+            { name: "left", index: 0, color: "#10B981" },
+            { name: "right", index: len - 1, color: "#EF4444" }
+          ],
+          window: [0, len - 1],
+          matched: true
+        }
+      },
+      explanation: {
+        title: `String Verification Initialized`,
+        description: `Inspecting string "${text}" of length ${len}.`,
+        computation: `left = 0, right = ${len - 1}`,
+        impact: "Pointers initialized at boundaries."
+      }
+    });
+
+    let iter = 0;
+    while (left < right && iter < 10) {
+      iter++;
+      const charL = text[left];
+      const charR = text[right];
+      const match = charL === charR;
+
+      pushStep({
+        line: loopLine,
+        sourceCode: lines[loopLine - 1] || "while left < right:",
+        eventType: "condition",
+        callStack: stringStack,
+        variables: { left, right, "s[left]": charL, "s[right]": charR },
+        condition: "left < right",
+        conditionResult: true,
+        evaluatedResult: `${left} < ${right} -> True`,
+        algorithmState: {
+          type: "string_state",
+          stringData: {
+            text,
+            pointers: [
+              { name: "left", index: left, color: "#10B981" },
+              { name: "right", index: right, color: "#EF4444" }
+            ],
+            window: [left, right],
+            matched: match
+          }
+        },
+        explanation: {
+          title: `Step ${iter}: Comparing Characters`,
+          description: `Evaluating character '${charL}' at index ${left} vs '${charR}' at index ${right}.`,
+          computation: `'${charL}' == '${charR}' -> ${match ? "MATCH" : "MISMATCH"}`,
+          impact: match ? "Symmetric characters match." : "Palindrome property violated."
+        }
+      });
+
+      if (!match) {
+        isMatch = false;
+        break;
+      }
+      left++;
+      right--;
+    }
+
+    pushStep({
+      line: retLine,
+      sourceCode: lines[retLine - 1] || "return True",
+      eventType: "return",
+      callStack: stringStack,
+      variables: { result: isMatch },
+      returnValue: isMatch,
+      algorithmState: {
+        type: "string_state",
+        stringData: {
+          text,
+          pointers: [
+            { name: "mid", index: Math.floor(len / 2), color: "#3B82F6" }
+          ],
+          matched: isMatch
+        }
+      },
+      explanation: {
+        title: `String Traversal Complete`,
+        description: isMatch ? `"${text}" verified symmetrically in O(n) time and O(1) space.` : `Mismatch detected in O(n) time.`,
+        computation: `Result = ${isMatch}`,
+        impact: "Execution finished."
+      }
+    });
+
+  // ----------------------------------------------------------------------------
+  // ALGORITHM: MATHEMATICAL / SCALAR LOOPS (Halving, Sqrt, Primes, GCD, Arithmetic)
+  // ----------------------------------------------------------------------------
+  } else if (
+    codeLower.includes("prime") ||
+    codeLower.includes("gcd") ||
+    codeLower.includes("collatz") ||
+    codeLower.includes("count_halves") ||
+    codeLower.includes("divideuntilone") ||
+    codeLower.includes("is_prime") ||
+    codeLower.includes("* i <=") ||
+    codeLower.includes("* val <=") ||
+    codeLower.includes("//= 2") ||
+    codeLower.includes("/= 2") ||
+    codeLower.includes("//= 3") ||
+    (codeLower.includes("while ") && !codeLower.includes("arr") && !codeLower.includes("items") && !codeLower.includes("nums")) ||
+    (!codeLower.includes("arr") && !codeLower.includes("nums") && !codeLower.includes("items") && !codeLower.includes("matrix") && !codeLower.includes("vector") && !codeLower.includes("["))
+  ) {
+    const isPrimeAlgo = codeLower.includes("prime") || codeLower.includes("* i <=");
+    const isHalving = codeLower.includes("halves") || codeLower.includes("//= 2") || codeLower.includes("/= 2") || codeLower.includes("count_intervals") || codeLower.includes("divideuntilone");
+    const isGcd = codeLower.includes("gcd");
+
+    const inputN = userInput?.n !== undefined ? userInput.n : (isPrimeAlgo ? 17 : (isGcd ? 48 : 16));
+    let currentN = inputN;
+    let count = 0;
+    let iVal = isPrimeAlgo ? 2 : 1;
+
+    const fnLine = Math.max(1, lines.findIndex(l => l.includes("def ") || l.includes("(")) + 1);
+    const loopLine = Math.max(fnLine + 1, lines.findIndex(l => l.includes("while") || l.includes("for")) + 1);
+    const bodyLine = Math.max(loopLine + 1, lines.findIndex(l => l.includes("//=") || l.includes("/=") || l.includes("+=") || l.includes("%")) + 1);
+    const retLine = Math.max(bodyLine + 1, lines.findIndex(l => l.includes("return")) + 1);
+
+    const mathStack: StackFrame[] = [{
+      id: "f_math",
+      functionName: `compute(n = ${currentN})`,
+      args: { n: currentN },
+      variables: { n: currentN, count: 0 }
+    }];
+
+    pushStep({
+      line: fnLine,
+      sourceCode: lines[fnLine - 1] || `def process(n = ${currentN}):`,
+      eventType: "call",
+      callStack: mathStack,
+      variables: { n: currentN, count },
+      algorithmState: {
+        type: "math_state",
+        mathRegisters: isPrimeAlgo ? { n: currentN, i: iVal, "i²": iVal * iVal } : { n: currentN, count },
+        activeFormula: isPrimeAlgo ? `i * i <= n` : (isHalving ? `n > 1` : `i < n`),
+        formulaResult: true
+      },
+      explanation: {
+        title: `Mathematical Execution Started`,
+        description: `Initialized scalar register state with N = ${currentN}.`,
+        computation: `Input = ${currentN}`,
+        impact: "Stack frame initialized with O(1) auxiliary space."
+      }
+    });
+
+    let iter = 0;
+    const maxIter = 10;
+
+    if (isHalving) {
+      while (currentN > 1 && iter < maxIter) {
+        iter++;
+        const nextN = Math.floor(currentN / 2);
+        count++;
+
+        pushStep({
+          line: loopLine,
+          sourceCode: lines[loopLine - 1] || "while n > 1:",
+          eventType: "condition",
+          callStack: mathStack,
+          variables: { n: currentN, count },
+          condition: "n > 1",
+          conditionResult: currentN > 1,
+          evaluatedResult: `${currentN} > 1 -> True`,
+          algorithmState: {
+            type: "math_state",
+            mathRegisters: { n: currentN, count },
+            activeFormula: `${currentN} > 1`,
+            formulaResult: true
+          },
+          explanation: {
+            title: `Step ${iter}: Logarithmic Halving Condition`,
+            description: `n = ${currentN} > 1 is TRUE. Proceeding to divide n by 2.`,
+            computation: `${currentN} > 1 -> TRUE`,
+            impact: "Halving remaining operations in O(log n)."
+          }
+        });
+
+        pushStep({
+          line: bodyLine,
+          sourceCode: lines[bodyLine - 1] || "n = n // 2",
+          eventType: "assign",
+          callStack: mathStack,
+          variables: { n: nextN, count },
+          changedVariables: [{ name: "n", oldValue: currentN, newValue: nextN }],
+          evaluatedResult: `n = ${currentN} // 2 = ${nextN}`,
+          algorithmState: {
+            type: "math_state",
+            mathRegisters: { n: nextN, count },
+            activeFormula: `n = ${currentN} // 2 = ${nextN}`,
+            formulaResult: true
+          },
+          explanation: {
+            title: `Register Mutated: n = ${nextN}`,
+            description: `n halved from ${currentN} down to ${nextN}. Total steps so far: ${count}.`,
+            computation: `${currentN} // 2 = ${nextN}`,
+            impact: "Problem size halved."
+          }
+        });
+
+        currentN = nextN;
+      }
+    } else if (isPrimeAlgo) {
+      while (iVal * iVal <= currentN && iter < maxIter) {
+        iter++;
+        const isDivisible = currentN % iVal === 0;
+
+        pushStep({
+          line: loopLine,
+          sourceCode: lines[loopLine - 1] || "while i * i <= n:",
+          eventType: "condition",
+          callStack: mathStack,
+          variables: { n: currentN, i: iVal, "i*i": iVal * iVal },
+          condition: "i * i <= n",
+          conditionResult: iVal * iVal <= currentN,
+          evaluatedResult: `${iVal * iVal} <= ${currentN} -> True`,
+          algorithmState: {
+            type: "math_state",
+            mathRegisters: { n: currentN, i: iVal, "i²": iVal * iVal, "n % i": currentN % iVal },
+            activeFormula: `${iVal} * ${iVal} <= ${currentN}`,
+            formulaResult: true
+          },
+          explanation: {
+            title: `Step ${iter}: Prime Trial Division at i = ${iVal}`,
+            description: `Checking divisor candidate i = ${iVal} against √${currentN} bound.`,
+            computation: `${iVal}² = ${iVal * iVal} <= ${currentN} -> TRUE`,
+            impact: "Executing step in O(√n) sub-linear bound."
+          }
+        });
+
+        if (isDivisible) {
+          break;
+        }
+        iVal++;
+      }
+    } else {
+      // General scalar loop (e.g. for i in range(min(n, 5)))
+      const loopBound = Math.min(Math.max(currentN, 1), 5);
+      let accumulator = 0;
+      for (let s = 1; s <= loopBound; s++) {
+        accumulator += s;
+        pushStep({
+          line: loopLine,
+          sourceCode: lines[loopLine - 1] || "for i in range(n):",
+          eventType: "loop_iter",
+          callStack: mathStack,
+          variables: { i: s, n: currentN, total: accumulator },
+          changedVariables: [{ name: "i", oldValue: s > 1 ? s - 1 : 0, newValue: s }],
+          algorithmState: {
+            type: "math_state",
+            mathRegisters: { i: s, n: currentN, total: accumulator },
+            activeFormula: `i = ${s} / ${loopBound}`,
+            formulaResult: true
+          },
+          explanation: {
+            title: `Scalar Iteration ${s}/${loopBound}`,
+            description: `Accumulating scalar state: i = ${s}, total = ${accumulator}.`,
+            computation: `total = ${accumulator}`,
+            impact: "Executing step with O(1) auxiliary registers."
+          }
+        });
+      }
+    }
+
+    pushStep({
+      line: retLine,
+      sourceCode: lines[retLine - 1] || "return result",
+      eventType: "return",
+      callStack: mathStack,
+      variables: { n: currentN, result: count || iVal, status: "COMPLETE" },
+      returnValue: count || iVal,
+      algorithmState: {
+        type: "math_state",
+        mathRegisters: isPrimeAlgo ? { n: currentN, "isPrime": currentN % iVal !== 0 } : { n: currentN, result: count || currentN },
+        activeFormula: "Halt Condition Reached",
+        formulaResult: true
+      },
+      explanation: {
+        title: "Scalar Mathematical Execution Complete",
+        description: `Process terminated cleanly with result in O(1) auxiliary space.`,
+        computation: `Final Operations: ${opCount}`,
+        impact: "Stack frame popped. Return value registered."
+      }
+    });
+
+  // ----------------------------------------------------------------------------
+  // ALGORITHM: 2D MATRIX / GRID TRAVERSAL
+  // ----------------------------------------------------------------------------
+  } else if (
+    userInput?.mode === "matrix" ||
+    detectInputModeFromCode(code) === "matrix"
+  ) {
+    const inputMatrix: number[][] = (userInput?.matrix && userInput.matrix.length > 0)
+      ? userInput.matrix
+      : [
+          [1, 2, 3],
+          [4, 5, 6],
+          [7, 8, 9]
+        ];
+
+    const numRows = inputMatrix.length;
+    const numCols = inputMatrix[0]?.length || 0;
+
+    const fnLine = Math.max(1, lines.findIndex(l => l.includes("def ") || l.includes("(")) + 1);
+    const loopLine = Math.max(fnLine + 1, lines.findIndex((l, idx) => idx >= fnLine && (l.includes("for ") || l.includes("while "))) + 1);
+    const innerLoopLine = Math.max(loopLine + 1, lines.findIndex((l, idx) => idx >= loopLine && (l.includes("for ") || l.includes("while "))) + 1);
+    const retLine = Math.max(loopLine + 1, lines.findIndex(l => l.includes("return")) + 1);
+
+    const matrixStack: StackFrame[] = [{
+      id: "frame_matrix",
+      functionName: "matrix_process",
+      args: { matrix: inputMatrix },
+      variables: { rows: numRows, cols: numCols, totalCells: numRows * numCols }
+    }];
+
+    pushStep({
+      line: fnLine,
+      sourceCode: lines[fnLine - 1] || lines[0] || "def process_matrix(matrix):",
+      eventType: "call",
+      callStack: matrixStack,
+      variables: { rows: numRows, cols: numCols, totalCells: numRows * numCols },
+      algorithmState: {
+        type: "matrix",
+        matrix: inputMatrix,
+        activeCell: [0, 0],
+        mathRegisters: { rows: numRows, cols: numCols, totalCells: numRows * numCols }
+      },
+      explanation: {
+        title: `Matrix Initialization (${numRows} × ${numCols})`,
+        description: `Allocated 2D grid matrix with ${numRows} rows and ${numCols} columns (${numRows * numCols} total elements).`,
+        computation: `Dimension: ${numRows} rows × ${numCols} cols`,
+        impact: "Stack frame initialized for 2D spatial execution."
+      }
+    });
+
+    let cellsVisited = 0;
+    for (let r = 0; r < numRows; r++) {
+      pushStep({
+        line: loopLine,
+        sourceCode: lines[loopLine - 1] || "for r in range(rows):",
+        eventType: "loop_iter",
+        callStack: matrixStack,
+        variables: { r, rows: numRows, cols: numCols },
+        changedVariables: [{ name: "r", oldValue: r > 0 ? r - 1 : undefined, newValue: r }],
+        algorithmState: {
+          type: "matrix",
+          matrix: inputMatrix,
+          activeCell: [r, 0],
+          mathRegisters: { r, rows: numRows, cols: numCols }
+        },
+        explanation: {
+          title: `Row Traversal: r = ${r} of ${numRows}`,
+          description: `Outer loop activates row index r = ${r} (values: [${inputMatrix[r].join(", ")}]).`,
+          computation: `Row = ${r}`,
+          impact: "Stepping through matrix row vectors."
+        }
+      });
+
+      for (let c = 0; c < numCols; c++) {
+        cellsVisited++;
+        const cellVal = inputMatrix[r][c];
+        const offset = r * numCols + c;
+
+        pushStep({
+          line: innerLoopLine > 0 ? innerLoopLine : loopLine + 1,
+          sourceCode: lines[(innerLoopLine > 0 ? innerLoopLine : loopLine + 1) - 1] || "    for c in range(cols):",
+          eventType: "loop_iter",
+          callStack: matrixStack,
+          variables: { r, c, val: cellVal, linearIndex: offset },
+          changedVariables: [{ name: "c", oldValue: c > 0 ? c - 1 : undefined, newValue: c }],
+          algorithmState: {
+            type: "matrix",
+            matrix: inputMatrix,
+            activeCell: [r, c],
+            mathRegisters: { r, c, val: cellVal, offset, totalCells: numRows * numCols }
+          },
+          explanation: {
+            title: `Matrix Cell Access: [${r}, ${c}] = ${cellVal}`,
+            description: `Accessing cell matrix[${r}][${c}]: value is ${cellVal}. Memory offset = row * cols + col = ${r} * ${numCols} + ${c} = ${offset}.`,
+            computation: `matrix[${r}][${c}] = ${cellVal}`,
+            impact: `Visited cell ${cellsVisited}/${numRows * numCols} (O(R × C) spatial complexity).`
+          }
+        });
+      }
+    }
+
+    pushStep({
+      line: retLine <= lines.length ? retLine : lines.length,
+      sourceCode: lines[retLine - 1] || lines[lines.length - 1] || "return matrix",
+      eventType: "return",
+      callStack: matrixStack,
+      variables: { status: "COMPLETE", totalVisited: cellsVisited },
+      returnValue: inputMatrix,
+      algorithmState: {
+        type: "matrix",
+        matrix: inputMatrix,
+        mathRegisters: { status: "COMPLETE", totalElements: numRows * numCols }
+      },
+      explanation: {
+        title: "2D Matrix Traversal Complete",
+        description: `Successfully processed all ${numRows * numCols} matrix cells across the ${numRows} × ${numCols} grid.`,
+        computation: `Total Operations = ${opCount}`,
+        impact: "Stack frames popped. Final 2D grid state returned."
+      }
+    });
+
+  // ----------------------------------------------------------------------------
+  // GENERAL ARRAY / MATRIX / NESTED LOOPS
   // ----------------------------------------------------------------------------
   } else {
     const inputArr = (userInput?.array && userInput.array.length > 0)
       ? userInput.array
       : [10, 20, 30, 40];
+
+    const fnLine = Math.max(1, lines.findIndex(l => l.includes("def ") || l.includes("(")) + 1);
+    const loopLine = Math.max(fnLine + 1, lines.findIndex(l => l.includes("for ") || l.includes("while ")) + 1);
+    const innerLoopLine = Math.max(loopLine + 1, lines.slice(loopLine).findIndex(l => l.includes("for ") || l.includes("while ")) + loopLine + 1);
+    const retLine = Math.max(loopLine + 1, lines.findIndex(l => l.includes("return")) + 1);
 
     const generalStack: StackFrame[] = [{
       id: "frame_main",
@@ -728,8 +1262,8 @@ export function generateExecutionSteps(
     }];
 
     pushStep({
-      line: 1,
-      sourceCode: lines[0] || "def process(items):",
+      line: fnLine,
+      sourceCode: lines[fnLine - 1] || lines[0] || "def process(items):",
       eventType: "call",
       callStack: generalStack,
       variables: { items: inputArr },
@@ -753,8 +1287,8 @@ export function generateExecutionSteps(
       const limit = Math.min(inputArr.length, 4);
       for (let i = 0; i < limit; i++) {
         pushStep({
-          line: 2,
-          sourceCode: lines[1] || "for i in items:",
+          line: loopLine,
+          sourceCode: lines[loopLine - 1] || "for i in items:",
           eventType: "loop_iter",
           callStack: generalStack,
           variables: { i, items: inputArr, totalOps },
@@ -775,8 +1309,8 @@ export function generateExecutionSteps(
         for (let j = 0; j < limit; j++) {
           totalOps++;
           pushStep({
-            line: 4,
-            sourceCode: lines[3] || "    for j in items:",
+            line: innerLoopLine > loopLine ? innerLoopLine : loopLine + 1,
+            sourceCode: lines[innerLoopLine > loopLine ? innerLoopLine - 1 : loopLine] || "    for j in items:",
             eventType: "loop_iter",
             callStack: generalStack,
             variables: { i, j, items: inputArr, totalOps },
@@ -801,8 +1335,8 @@ export function generateExecutionSteps(
     } else {
       for (let i = 0; i < inputArr.length; i++) {
         pushStep({
-          line: 2,
-          sourceCode: lines[1] || "for i in items:",
+          line: loopLine,
+          sourceCode: lines[loopLine - 1] || "for i in items:",
           eventType: "loop_iter",
           callStack: generalStack,
           variables: { i, val: inputArr[i], total: (i + 1) * 10 },
@@ -824,8 +1358,8 @@ export function generateExecutionSteps(
 
     // Final
     pushStep({
-      line: lines.length,
-      sourceCode: lines[lines.length - 1] || "return result",
+      line: retLine <= lines.length ? retLine : lines.length,
+      sourceCode: lines[retLine - 1] || lines[lines.length - 1] || "return result",
       eventType: "return",
       callStack: generalStack,
       variables: { status: "SUCCESS", ops: opCount },

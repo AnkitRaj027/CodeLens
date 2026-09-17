@@ -357,6 +357,126 @@ export const DEFAULT_QUIZ_QUESTIONS = [
     correct_time: "O(n²)",
     correct_space: "O(1)",
     explanation: "Two independent loops from 0 to n-1 result in n * n = n² iterations. Loop indices consume O(1) auxiliary space."
+  },
+  {
+    id: "quiz-5",
+    title: "Harmonic Sieve Loop (Step by i)",
+    category: "Harmonic Series & Math",
+    difficulty: "Hard",
+    code_snippet: `void sieveDivisors(int n) {
+    int total_ops = 0;
+    for (int i = 1; i <= n; i++) {
+        for (int j = i; j <= n; j += i) {
+            total_ops++;
+        }
+    }
+}`,
+    language: "cpp",
+    time_options: ["O(n)", "O(n log n)", "O(n²)", "O(√n)"],
+    space_options: ["O(1)", "O(n)", "O(log n)"],
+    correct_time: "O(n log n)",
+    correct_space: "O(1)",
+    explanation: "For each i, the inner loop executes n/i times. Summing n/1 + n/2 + ... + n/n = n * H_n = O(n log n). Auxiliary space is O(1)."
+  },
+  {
+    id: "quiz-6",
+    title: "Square Root Bounded Prime Check",
+    category: "Mathematical Bounds",
+    difficulty: "Easy",
+    code_snippet: `def is_prime(n):
+    if n <= 1:
+        return False
+    i = 2
+    while i * i <= n:
+        if n % i == 0:
+            return False
+        i += 1
+    return True`,
+    language: "python",
+    time_options: ["O(1)", "O(log n)", "O(√n)", "O(n)"],
+    space_options: ["O(1)", "O(log n)", "O(n)"],
+    correct_time: "O(√n)",
+    correct_space: "O(1)",
+    explanation: "The condition i * i <= n stops when i reaches ⌈√n⌉, taking at most O(√n) iterations with O(1) auxiliary scalar memory."
+  },
+  {
+    id: "quiz-7",
+    title: "Amortized Monotonic Stack Span",
+    category: "Amortized Analysis",
+    difficulty: "Hard",
+    code_snippet: `def stock_spans(prices):
+    n = len(prices)
+    stack = []
+    spans = [0] * n
+    for i in range(n):
+        while stack and prices[stack[-1]] <= prices[i]:
+            stack.pop()
+        spans[i] = i - stack[-1] if stack else i + 1
+        stack.append(i)
+    return spans`,
+    language: "python",
+    time_options: ["O(n)", "O(n²)", "O(n log n)", "O(2^n)"],
+    space_options: ["O(1)", "O(n)", "O(n²)"],
+    correct_time: "O(n)",
+    correct_space: "O(n)",
+    explanation: "Each price index is pushed and popped at most once across the entire sequence. The total operations are at most 2n, giving amortized O(n) time and O(n) space."
+  },
+  {
+    id: "quiz-8",
+    title: "Two-Pointer Sliding Window",
+    category: "Sliding Window",
+    difficulty: "Medium",
+    code_snippet: `def min_subarray_len(target, nums):
+    left = 0
+    curr_sum = 0
+    min_len = float('inf')
+    for right in range(len(nums)):
+        curr_sum += nums[right]
+        while curr_sum >= target:
+            min_len = min(min_len, right - left + 1)
+            curr_sum -= nums[left]
+            left += 1
+    return min_len if min_len != float('inf') else 0`,
+    language: "python",
+    time_options: ["O(n)", "O(n²)", "O(n log n)", "O(1)"],
+    space_options: ["O(1)", "O(n)", "O(log n)"],
+    correct_time: "O(n)",
+    correct_space: "O(1)",
+    explanation: "Both left and right pointers traverse the array monotonically forward at most n times each. Total pointer steps are bounded by 2n = O(n) with O(1) space."
+  },
+  {
+    id: "quiz-9",
+    title: "Exponential 2^n Tree Recursion",
+    category: "Recursion",
+    difficulty: "Medium",
+    code_snippet: `int countWays(int n) {
+    if (n <= 1) return 1;
+    return countWays(n - 1) + countWays(n - 2);
+}`,
+    language: "cpp",
+    time_options: ["O(n)", "O(n log n)", "O(2^n)", "O(n²)"],
+    space_options: ["O(1)", "O(n)", "O(2^n)"],
+    correct_time: "O(2^n)",
+    correct_space: "O(n)",
+    explanation: "Without memoization, each call branches into 2 subproblems down to depth n, requiring ~2^n total function calls and O(n) maximum call stack depth."
+  },
+  {
+    id: "quiz-10",
+    title: "Brian Kernighan's Bit Manipulation",
+    category: "Bit Manipulation",
+    difficulty: "Easy",
+    code_snippet: `def count_set_bits(n):
+    count = 0
+    while n > 0:
+        n = n & (n - 1)
+        count += 1
+    return count`,
+    language: "python",
+    time_options: ["O(1)", "O(log n)", "O(n)", "O(n log n)"],
+    space_options: ["O(1)", "O(log n)", "O(n)"],
+    correct_time: "O(log n)",
+    correct_space: "O(1)",
+    explanation: "n & (n - 1) clears the lowest set bit on each iteration. In the worst case, an integer has at most ⌊log₂(n)⌋ + 1 set bits, taking O(log n) steps and O(1) space."
   }
 ];
 

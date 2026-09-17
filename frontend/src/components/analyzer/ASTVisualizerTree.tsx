@@ -277,6 +277,7 @@ export const ASTVisualizerTree: React.FC<ASTVisualizerTreeProps> = ({
     <div className="space-y-4">
       {/* 0. CUSTOM INPUT CONFIGURATION BAR */}
       <InputConfigBar 
+        code={code}
         onApplyInput={(cfg) => {
           setCustomInput(cfg);
           handleReset();

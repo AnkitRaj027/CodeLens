@@ -29,6 +29,7 @@ interface QuizQuestion {
   correct_time: string;
   correct_space: string;
   explanation: string;
+  source?: string; // "ai" | "procedural" | "core"
 }
 
 interface SubmitResult {
@@ -43,6 +44,7 @@ interface SubmitResult {
 
 const STORAGE_KEY_QUESTION = "codelens_practice_question";
 const STORAGE_KEY_STATE = "codelens_practice_state";
+const STORAGE_KEY_SEEN = "codelens_practice_seen_ids";
 
 export default function PracticePage() {
   const router = useRouter();
@@ -57,11 +59,19 @@ export default function PracticePage() {
   const [score, setScore] = useState<number>(0);
   const [streak, setStreak] = useState<number>(0);
   const [solvedCount, setSolvedCount] = useState<number>(0);
+  const [seenIds, setSeenIds] = useState<string[]>([]);
   const [isHydrated, setIsHydrated] = useState<boolean>(false);
 
-  // 1. Hydrate saved question and progress from storage on initial load
+  // 1. Hydrate saved question, seen history, and progress from storage on initial load
   useEffect(() => {
+    let initialSeen: string[] = [];
     try {
+      const savedSeenStr = sessionStorage.getItem(STORAGE_KEY_SEEN);
+      if (savedSeenStr) {
+        initialSeen = JSON.parse(savedSeenStr);
+        setSeenIds(initialSeen);
+      }
+
       const savedQuestionStr = sessionStorage.getItem(STORAGE_KEY_QUESTION);
       const savedStateStr = sessionStorage.getItem(STORAGE_KEY_STATE);
 
@@ -88,7 +98,7 @@ export default function PracticePage() {
     }
 
     setIsHydrated(true);
-    fetchNewQuestion("python", "all");
+    fetchNewQuestion("python", "all", initialSeen);
   }, []);
 
   // 2. Persist state to sessionStorage whenever it changes
@@ -116,7 +126,23 @@ export default function PracticePage() {
     }
   }, [currentQuestion, selectedTime, selectedSpace, result, score, streak, solvedCount, selectedLanguage, selectedDifficulty, isHydrated]);
 
-  const fetchNewQuestion = async (lang = selectedLanguage, diff = selectedDifficulty) => {
+  const recordSeenId = (id: string) => {
+    setSeenIds((prev) => {
+      const updated = [...prev.filter((item) => item !== id), id].slice(-30);
+      try {
+        sessionStorage.setItem(STORAGE_KEY_SEEN, JSON.stringify(updated));
+      } catch (e) {
+        console.warn("Failed to persist seen ids", e);
+      }
+      return updated;
+    });
+  };
+
+  const fetchNewQuestion = async (
+    lang = selectedLanguage, 
+    diff = selectedDifficulty,
+    currentExclude = seenIds
+  ) => {
     setIsGenerating(true);
     setSelectedTime("");
     setSelectedSpace("");
@@ -126,19 +152,25 @@ export default function PracticePage() {
       const res = await api.post<QuizQuestion>("/quiz/generate", {
         language: lang,
         difficulty: diff === "all" ? undefined : diff,
+        exclude_ids: currentExclude,
       });
       setCurrentQuestion(res.data);
+      recordSeenId(res.data.id);
       sessionStorage.setItem(STORAGE_KEY_QUESTION, JSON.stringify(res.data));
     } catch (e) {
-      console.error("Failed to generate dynamic question, fetching random...", e);
+      console.error("Failed to generate dynamic question, fetching fallback...", e);
       try {
         const fallback = await api.get<QuizQuestion>("/quiz/random");
         setCurrentQuestion(fallback.data);
+        recordSeenId(fallback.data.id);
         sessionStorage.setItem(STORAGE_KEY_QUESTION, JSON.stringify(fallback.data));
       } catch (err) {
-        // Ultimate client-side fallback if server is offline
-        const randomFallback = DEFAULT_QUIZ_QUESTIONS[Math.floor(Math.random() * DEFAULT_QUIZ_QUESTIONS.length)];
+        // High-variety offline fallback pool filtering out recently seen IDs
+        const unvisited = DEFAULT_QUIZ_QUESTIONS.filter((q) => !currentExclude.includes(q.id));
+        const pool = unvisited.length > 0 ? unvisited : DEFAULT_QUIZ_QUESTIONS;
+        const randomFallback = pool[Math.floor(Math.random() * pool.length)];
         setCurrentQuestion(randomFallback);
+        recordSeenId(randomFallback.id);
         sessionStorage.setItem(STORAGE_KEY_QUESTION, JSON.stringify(randomFallback));
       }
     } finally {
@@ -280,12 +312,12 @@ export default function PracticePage() {
           {isGenerating ? (
             <>
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              <span>Synthesizing Challenge...</span>
+              <span>Synthesizing Infinite Challenge...</span>
             </>
           ) : (
             <>
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>Generate New AI Challenge</span>
+              <span>Generate New Challenge</span>
             </>
           )}
         </button>
@@ -295,7 +327,7 @@ export default function PracticePage() {
       {isGenerating ? (
         <div className="p-12 rounded-lg bg-[#111113] border border-[#27272A] flex flex-col items-center justify-center text-[#71717A] font-mono text-xs gap-3">
           <Loader2 className="w-6 h-6 animate-spin text-blue-400" />
-          <span>Generating novel algorithmic complexity challenge via Mistral AI...</span>
+          <span>Synthesizing novel algorithmic complexity challenge via Dual-Engine...</span>
         </div>
       ) : !currentQuestion ? (
         <div className="p-12 rounded-lg bg-[#111113] border border-[#27272A] text-center space-y-3 font-mono text-xs text-[#71717A]">
@@ -321,6 +353,22 @@ export default function PracticePage() {
             </div>
 
             <div className="flex items-center gap-2">
+              {currentQuestion.source === "ai" ? (
+                <span className="text-[10px] uppercase font-bold px-1.5 py-0.2 rounded bg-purple-500/10 border border-purple-500/30 text-purple-300 flex items-center gap-1">
+                  <Sparkles className="w-2.5 h-2.5 text-purple-400" />
+                  AI Synthesized
+                </span>
+              ) : currentQuestion.source === "procedural" ? (
+                <span className="text-[10px] uppercase font-bold px-1.5 py-0.2 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center gap-1">
+                  <span>⚡</span>
+                  Procedural Engine
+                </span>
+              ) : (
+                <span className="text-[10px] uppercase font-bold px-1.5 py-0.2 rounded bg-blue-500/10 border border-blue-500/30 text-blue-400 flex items-center gap-1">
+                  <span>📚</span>
+                  Curated
+                </span>
+              )}
               <span className="text-[10px] uppercase font-semibold px-1.5 py-0.2 rounded bg-[#18181B] border border-[#27272A] text-blue-400">
                 {currentQuestion.difficulty}
               </span>

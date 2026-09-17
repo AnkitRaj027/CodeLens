@@ -11,7 +11,8 @@ import {
   Layers, 
   Split, 
   CheckCircle2,
-  Minimize2
+  Minimize2,
+  LayoutGrid
 } from "lucide-react";
 
 interface AlgorithmVisualizerCanvasProps {
@@ -235,6 +236,227 @@ export const AlgorithmVisualizerCanvas: React.FC<AlgorithmVisualizerCanvasProps>
               );
             })}
           </div>
+        </div>
+      )}
+
+      {/* 4. MATHEMATICAL / SCALAR STATE LEDGER (No bogus arrays) */}
+      {algorithmState.type === "math_state" && (
+        <div className="w-full max-w-xl flex flex-col items-center justify-center space-y-6 animate-in fade-in zoom-in-95">
+          {/* Header indicator */}
+          <div className="flex items-center gap-2 text-xs font-bold text-emerald-400 uppercase tracking-wider bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Mathematical State & Variable Register Ledger</span>
+          </div>
+
+          {/* Active Formula & Condition Evaluation Card */}
+          {algorithmState.activeFormula && (
+            <div className="w-full p-4 rounded-xl bg-[#141416] border border-emerald-500/30 shadow-lg shadow-emerald-500/5 space-y-2">
+              <div className="flex items-center justify-between text-xs text-emerald-400 font-bold uppercase">
+                <span>Active Expression & Loop Condition</span>
+                <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${
+                  algorithmState.formulaResult !== false 
+                    ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40" 
+                    : "bg-rose-500/20 text-rose-300 border border-rose-500/40"
+                }`}>
+                  {algorithmState.formulaResult !== false ? "Condition Satisfied (True)" : "Halt Boundary Reached (False)"}
+                </span>
+              </div>
+              <div className="text-base sm:text-lg font-mono font-black text-[#F4F4F5] bg-[#09090B] px-3 py-2 rounded-lg border border-[#27272A] text-center">
+                {algorithmState.activeFormula}
+              </div>
+            </div>
+          )}
+
+          {/* Live Variable Registers */}
+          {algorithmState.mathRegisters && (
+            <div className="w-full space-y-2">
+              <div className="text-[11px] font-bold text-[#71717A] uppercase tracking-wider text-center">
+                Active Scalar Registers
+              </div>
+              <div className="flex items-center justify-center gap-3 sm:gap-4 flex-wrap">
+                {Object.entries(algorithmState.mathRegisters).map(([varName, val], idx) => (
+                  <div
+                    key={idx}
+                    className="p-4 rounded-xl border border-emerald-500/40 bg-emerald-950/20 ring-1 ring-emerald-500/20 shadow-lg font-mono min-w-[100px] text-center transition-all duration-300 scale-105"
+                  >
+                    <div className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">
+                      {varName}
+                    </div>
+                    <div className="text-xl font-black text-[#F4F4F5] my-1">
+                      {String(val)}
+                    </div>
+                    <div className="text-[9px] text-[#71717A]">
+                      O(1) Scalar Register
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 5. STRING CHARACTER TAPE & WINDOW TRAVERSAL */}
+      {algorithmState.type === "string_state" && algorithmState.stringData && (
+        <div className="w-full max-w-2xl flex flex-col items-center justify-center space-y-6 sm:space-y-8 animate-in fade-in zoom-in-95">
+          {/* Header indicator */}
+          <div className="flex items-center gap-2 text-xs font-bold text-cyan-400 uppercase tracking-wider bg-cyan-500/10 px-3 py-1 rounded-full border border-cyan-500/20">
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            <span>Character Stream & Two-Pointer Tape</span>
+          </div>
+
+          {/* Character Tiles */}
+          <div className="w-full overflow-x-auto pb-4 pt-4 flex justify-start sm:justify-center px-4">
+            <div className="flex items-end gap-2 sm:gap-2.5 min-w-max mx-auto sm:mx-0">
+              {algorithmState.stringData.text.split("").map((char, idx) => {
+                const pointer = algorithmState.stringData?.pointers?.find((p) => p.index === idx);
+                const isInsideWindow =
+                  algorithmState.stringData?.window &&
+                  idx >= algorithmState.stringData.window[0] &&
+                  idx <= algorithmState.stringData.window[1];
+
+                return (
+                  <div key={idx} className="flex flex-col items-center gap-1.5 sm:gap-2">
+                    {/* Pointer Label Pin */}
+                    <div className="h-7 flex items-center justify-center">
+                      {pointer ? (
+                        <div
+                          style={{ borderColor: pointer.color || "#06B6D4", color: pointer.color || "#06B6D4" }}
+                          className="text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full border bg-[#18181B] shadow-md flex items-center gap-1 animate-bounce"
+                        >
+                          <ArrowDown className="w-2.5 h-2.5" />
+                          <span>{pointer.name}</span>
+                        </div>
+                      ) : null}
+                    </div>
+
+                    {/* Character Tile */}
+                    <div
+                      className={`w-11 h-11 sm:w-14 sm:h-14 rounded-xl border flex flex-col items-center justify-center text-sm sm:text-base font-extrabold transition-all duration-300 shadow-sm ${
+                        pointer
+                          ? "bg-cyan-950/40 border-cyan-400 text-cyan-200 ring-2 ring-cyan-500 shadow-lg shadow-cyan-500/20 scale-105"
+                          : isInsideWindow
+                          ? "bg-[#18181B] border-cyan-500/40 text-[#F4F4F5]"
+                          : "bg-[#111113] border-[#27272A] text-[#52525B] opacity-40 scale-95"
+                      }`}
+                    >
+                      <span>'{char}'</span>
+                    </div>
+
+                    {/* Index Label */}
+                    <span className="text-[10px] sm:text-[11px] text-[#71717A] font-bold">[{idx}]</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 6. 2D MATRIX / SPATIAL GRID VISUALIZATION */}
+      {algorithmState.type === "matrix" && algorithmState.matrix && (
+        <div className="w-full max-w-2xl flex flex-col items-center justify-center space-y-5 animate-in fade-in zoom-in-95">
+          {/* Header indicator */}
+          <div className="flex items-center gap-2 text-xs font-bold text-purple-400 uppercase tracking-wider bg-purple-500/10 px-3.5 py-1.5 rounded-full border border-purple-500/30 shadow-sm">
+            <LayoutGrid className="w-3.5 h-3.5" />
+            <span>2D Matrix Spatial Grid & Cell Traversal</span>
+          </div>
+
+          {/* Matrix Dimension & Active Coordinate Badges */}
+          <div className="flex items-center justify-center gap-3 text-xs font-mono flex-wrap">
+            <span className="px-2.5 py-1 rounded-lg bg-[#18181B] border border-[#27272A] text-[#A1A1AA]">
+              Dimensions: <strong className="text-purple-300">{algorithmState.matrix.length} Rows × {algorithmState.matrix[0]?.length || 0} Cols</strong>
+            </span>
+            {algorithmState.activeCell && (
+              <span className="px-2.5 py-1 rounded-lg bg-purple-500/20 border border-purple-500/40 text-purple-300 font-bold flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-purple-400 animate-ping" />
+                Active Cell: [{algorithmState.activeCell[0]}, {algorithmState.activeCell[1]}] = {
+                  algorithmState.matrix[algorithmState.activeCell[0]]?.[algorithmState.activeCell[1]]
+                }
+              </span>
+            )}
+          </div>
+
+          {/* 2D Table / Grid Display */}
+          <div className="p-4 sm:p-6 rounded-2xl bg-[#141416] border border-[#27272A] shadow-xl overflow-x-auto max-w-full">
+            <div className="flex flex-col gap-2 min-w-max mx-auto">
+              {/* Column Index Headers */}
+              <div className="flex items-center gap-2 pl-8">
+                {algorithmState.matrix[0]?.map((_, colIdx) => (
+                  <div key={colIdx} className="w-12 sm:w-14 text-center text-[11px] font-bold text-[#71717A]">
+                    c[{colIdx}]
+                  </div>
+                ))}
+              </div>
+
+              {/* Rows */}
+              {algorithmState.matrix.map((row, rIdx) => (
+                <div key={rIdx} className="flex items-center gap-2">
+                  {/* Row Index Header */}
+                  <div className="w-6 text-right text-[11px] font-bold text-[#71717A]">
+                    r[{rIdx}]
+                  </div>
+
+                  {/* Row Cells */}
+                  <div className="flex items-center gap-2">
+                    {row.map((cellVal, cIdx) => {
+                      const isActive =
+                        algorithmState.activeCell &&
+                        algorithmState.activeCell[0] === rIdx &&
+                        algorithmState.activeCell[1] === cIdx;
+
+                      const isVisited =
+                        algorithmState.activeCell &&
+                        (rIdx < algorithmState.activeCell[0] ||
+                          (rIdx === algorithmState.activeCell[0] && cIdx < algorithmState.activeCell[1]));
+
+                      return (
+                        <div
+                          key={cIdx}
+                          className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl border flex flex-col items-center justify-center font-bold text-sm sm:text-base transition-all duration-300 shadow-sm ${
+                            isActive
+                              ? "bg-purple-600/30 border-purple-400 text-purple-200 ring-2 ring-purple-500 shadow-lg shadow-purple-500/25 scale-110 z-10"
+                              : isVisited
+                              ? "bg-[#18181B] border-purple-500/30 text-[#D4D4D8]"
+                              : "bg-[#111113] border-[#27272A] text-[#52525B] opacity-60"
+                          }`}
+                        >
+                          <span>{cellVal}</span>
+                          <span className="text-[9px] text-[#71717A] font-normal">
+                            ({rIdx},{cIdx})
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Active Cell Inspector */}
+          {algorithmState.activeCell && (
+            <div className="w-full max-w-lg p-3.5 rounded-xl bg-[#18181B] border border-purple-500/30 shadow-md flex items-center justify-around text-xs font-mono">
+              <div className="text-center">
+                <div className="text-[10px] text-[#71717A] uppercase">Row & Col</div>
+                <div className="text-sm font-bold text-purple-400">({algorithmState.activeCell[0]}, {algorithmState.activeCell[1]})</div>
+              </div>
+              <div className="h-6 w-px bg-[#27272A]" />
+              <div className="text-center">
+                <div className="text-[10px] text-[#71717A] uppercase">Value</div>
+                <div className="text-sm font-bold text-[#F4F4F5]">
+                  {algorithmState.matrix[algorithmState.activeCell[0]]?.[algorithmState.activeCell[1]]}
+                </div>
+              </div>
+              <div className="h-6 w-px bg-[#27272A]" />
+              <div className="text-center">
+                <div className="text-[10px] text-[#71717A] uppercase">Row-Major Offset</div>
+                <div className="text-sm font-bold text-indigo-400">
+                  {algorithmState.activeCell[0] * (algorithmState.matrix[0]?.length || 0) + algorithmState.activeCell[1]}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -42,13 +42,24 @@ export interface CFGGraph {
 }
 
 export interface AlgorithmState {
-  type: "array" | "merge_sort" | "binary_search" | "two_pointers" | "general";
+  type: "array" | "merge_sort" | "binary_search" | "two_pointers" | "general" | "math_state" | "string_state" | "matrix";
   array?: (number | string)[];
   indices?: { name: string; index: number; color?: string }[];
   subArrays?: { label: string; array: (number | string)[]; active?: boolean }[];
   comparison?: { left: any; right: any; op: string; result: boolean };
   merged?: (number | string)[];
   highlightRange?: [number, number];
+  mathRegisters?: Record<string, any>;
+  activeFormula?: string;
+  formulaResult?: boolean;
+  stringData?: {
+    text: string;
+    pointers?: { name: string; index: number; color?: string }[];
+    window?: [number, number];
+    matched?: boolean;
+  };
+  matrix?: number[][];
+  activeCell?: [number, number];
 }
 
 export interface ExecutionExplanation {
@@ -62,6 +73,9 @@ export interface UserInputConfig {
   array?: number[];
   target?: number;
   n?: number;
+  text?: string;
+  matrix?: number[][];
+  mode?: "array" | "number" | "string" | "matrix";
 }
 
 export interface ExecutionStep {
